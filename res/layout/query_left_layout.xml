@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical" >
+
+    <!-- 输入运单号查询 -->
+
+    <EditText
+        android:id="@+id/EditText_yundanhao"
+        android:layout_width="400dip"
+        android:layout_height="wrap_content"
+        android:hint="运单号" />
+
+    <!-- 显示查询结果信息 -->
+
+    <TextView
+        android:id="@+id/TextView_queryResult"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="查询结果:" />
+
+    <!-- 提交按钮，如果有结果的话，说明有余件 -->
+
+    <Button
+        android:id="@+id/Button_submit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="提 交" />
+
+</LinearLayout>
