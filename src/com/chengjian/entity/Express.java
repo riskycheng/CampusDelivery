@@ -1,5 +1,7 @@
 package com.chengjian.entity;
 
+import android.widget.ImageView;
+
 /**
  * function:表示一个快递的实体类型:包含快递公司、提货时间、收件人、快递状态
  * 
@@ -7,20 +9,31 @@ package com.chengjian.entity;
  * 
  */
 public class Express {
+	private ImageView expressImageView;
 	private String ExpressName;
 	private String FetchTime;
 	private String RecName;
 	private String ExpressStatus;
 
-	
-	
-	
+	public ImageView getExpressImageView() {
+		return expressImageView;
+	}
+
+	public void setExpressImageView(ImageView expressImageView) {
+		this.expressImageView = expressImageView;
+	}
+
+	public void setExpressStatus(String expressStatus) {
+		ExpressStatus = expressStatus;
+	}
+
 	public String getExpressName() {
 		return ExpressName;
 	}
 
-	public void setExpressName(int expressName) {
-		ExpressName = String.valueOf(expressName);
+	public void setExpressName(String expressName) {
+
+		ExpressName = expressName;
 	}
 
 	public String getFetchTime() {

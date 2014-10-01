@@ -81,7 +81,7 @@ public class LoadingActivity extends Activity {
 		new Thread() {
 			@Override
 			public void run() {
-				if(loadingType.equals("query")) {
+				if(loadingType.equals("query") || loadingType.equals("login")) {
 					result = callWebService(methodName, SQL);	//µ÷ÓÃwebservice²éÑ¯
 				}
 				handler.sendEmptyMessage(1);

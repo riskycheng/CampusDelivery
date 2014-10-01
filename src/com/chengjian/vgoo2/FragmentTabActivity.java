@@ -66,30 +66,32 @@ public class FragmentTabActivity extends FragmentActivity {
 
 		mTabManager = new TabManager(this, mTabHost, R.id.containertabcontent);
 
-		RelativeLayout app = (RelativeLayout) getLayoutInflater().inflate(
-				R.layout.app_tab_layout, null);
-		mTabManager.addTab(mTabHost.newTabSpec("Apps").setIndicator(app),
-				AppsFragment.class, null);
-
-		RelativeLayout contacts = (RelativeLayout) getLayoutInflater().inflate(
-				R.layout.contacts_tab_layout, null);
-		mTabManager.addTab(mTabHost.newTabSpec("Contact")
-				.setIndicator(contacts), ContactsFragment.class, null);
-
 		RelativeLayout message = (RelativeLayout) getLayoutInflater().inflate(
-				R.layout.message_tab_layout, null);
+				R.layout.home_tab_bottom_layout, null);
 		mTabManager.addTab(
 				mTabHost.newTabSpec("Message").setIndicator(message),
-				MessageFragment.class, null);
+				FirstFragment.class, null);
+		
+		RelativeLayout app = (RelativeLayout) getLayoutInflater().inflate(
+				R.layout.single_tab_bottom_layout, null);
+		mTabManager.addTab(mTabHost.newTabSpec("Apps").setIndicator(app),
+				QueryAFragment.class, null);
+
+		RelativeLayout contacts = (RelativeLayout) getLayoutInflater().inflate(
+				R.layout.all_tab_bottom_layout, null);
+		mTabManager.addTab(mTabHost.newTabSpec("Contact")
+				.setIndicator(contacts), QueryBFragment.class, null);
+
+		
 
 		mSettingLinearLayout = (LinearLayout) findViewById(R.id.setting);
 		mMainLinearLayout = (LinearLayout) findViewById(R.id.main);
-		mMainLinearLayout.setOnTouchListener(mOnTouchListener);
-		slideIn();
+//		mMainLinearLayout.setOnTouchListener(mOnTouchListener);
+//		slideIn();
 
 		ListView listView = (ListView) findViewById(R.id.list);
-		listView.setOnTouchListener(mOnTouchListener);
-		findViewById(R.id.btn_settings).setOnClickListener(mOnClickListener);
+//		listView.setOnTouchListener(mOnTouchListener);
+//		findViewById(R.id.btn_settings).setOnClickListener(mOnClickListener);
 
 		if (savedInstanceState != null) {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tag"));
@@ -103,139 +105,139 @@ public class FragmentTabActivity extends FragmentActivity {
 		listView.setAdapter(mAdapter);
 	}
 
-	// 点击按钮
-	private OnClickListener mOnClickListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			switch (v.getId()) {
-			case R.id.btn_settings:
-				if (mSlided) {
-					slideIn();
-				} else {
-					slideOut();
-				}
-				break;
-			}
-		}
-	};
+//	// 点击按钮
+//	private OnClickListener mOnClickListener = new OnClickListener() {
+//		@Override
+//		public void onClick(View v) {
+//			switch (v.getId()) {
+//			case R.id.btn_settings:
+//				if (mSlided) {
+//					slideIn();
+//				} else {
+//					slideOut();
+//				}
+//				break;
+//			}
+//		}
+//	};
 
-	// 滑动
-	private OnTouchListener mOnTouchListener = new OnTouchListener() {
-		@Override
-		public boolean onTouch(View v, MotionEvent event) {
-			if (v.getId() == R.id.main) {
-				int action = event.getAction();
-				switch (action) {
-				case MotionEvent.ACTION_DOWN:
-					mPositionX = event.getX();
-					break;
-				case MotionEvent.ACTION_MOVE:
-					final float currentX = event.getX();
-					// 向左边滑动
-					if (currentX - mPositionX <= -MOVE_DISTANCE && !mSlided) {
-						slideOut();
-					} else if (currentX - mPositionX >= MOVE_DISTANCE
-							&& mSlided) {
-						slideIn();
-					}
-					break;
-				default:
-					slideIn();
-					break;
-				}
-				return true;
-			}
-			return false;
-		}
-	};
-
-	/**
-	 * 滑出侧边栏
-	 */
-	private void slideOut() {
-		TranslateAnimation translate = new TranslateAnimation(mWidth,
-				TRANSLATE_ANIMATION_WIDTH, 0, 0);
-		translate.setDuration(ANIMATION_DURATION_SLOW);
-		translate.setFillAfter(true);
-		mSettingLinearLayout.startAnimation(translate);
-		mSettingLinearLayout.getAnimation().setAnimationListener(
-				new Animation.AnimationListener() {
-
-					@Override
-					public void onAnimationStart(Animation anim) {
-
-					}
-
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-
-					}
-
-					@Override
-					public void onAnimationEnd(Animation anima) {
-						TranslateAnimation animation = new TranslateAnimation(
-								0, TRANSLATE_ANIMATION_WIDTH - mWidth, 0, 0);
-						animation.setDuration(ANIMATION_DURATION_FAST);
-						animation.setFillAfter(true);
-						mMainLinearLayout.startAnimation(animation);
-						mSlided = true;
-					}
-				});
-	}
-
-	/**
-	 * 滑进侧边栏
-	 */
-	private void slideIn() {
-		TranslateAnimation translate = new TranslateAnimation(
-				TRANSLATE_ANIMATION_WIDTH, mWidth, 0, 0);
-		translate.setDuration(ANIMATION_DURATION_FAST);
-		// 动画完成时停在结束位置
-		translate.setFillAfter(true);
-		mSettingLinearLayout.startAnimation(translate);
-		mSettingLinearLayout.getAnimation().setAnimationListener(
-				new Animation.AnimationListener() {
-
-					@Override
-					public void onAnimationStart(Animation animation) {
-						TranslateAnimation mainAnimation = new TranslateAnimation(
-								-mWidth + TRANSLATE_ANIMATION_WIDTH, 0, 0, 0);
-						mainAnimation.setDuration(ANIMATION_DURATION_SLOW);
-						mainAnimation.setFillAfter(true);
-						mMainLinearLayout.startAnimation(mainAnimation);
-					}
-
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-
-					}
-
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						mSlided = false;
-					}
-				});
-
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		if (mSlided) {
-			slideIn();
-		} else {
-			slideOut();
-		}
-		return true;
-	}
-
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK && mSlided) {
-			slideIn();
-			return true;
-		}
-		return super.onKeyDown(keyCode, event);
-	}
+//	// 滑动
+//	private OnTouchListener mOnTouchListener = new OnTouchListener() {
+//		@Override
+//		public boolean onTouch(View v, MotionEvent event) {
+//			if (v.getId() == R.id.main) {
+//				int action = event.getAction();
+//				switch (action) {
+//				case MotionEvent.ACTION_DOWN:
+//					mPositionX = event.getX();
+//					break;
+//				case MotionEvent.ACTION_MOVE:
+//					final float currentX = event.getX();
+//					// 向左边滑动
+//					if (currentX - mPositionX <= -MOVE_DISTANCE && !mSlided) {
+//						slideOut();
+//					} else if (currentX - mPositionX >= MOVE_DISTANCE
+//							&& mSlided) {
+//						slideIn();
+//					}
+//					break;
+//				default:
+//					slideIn();
+//					break;
+//				}
+//				return true;
+//			}
+//			return false;
+//		}
+//	};
+//
+//	/**
+//	 * 滑出侧边栏
+//	 */
+//	private void slideOut() {
+//		TranslateAnimation translate = new TranslateAnimation(mWidth,
+//				TRANSLATE_ANIMATION_WIDTH, 0, 0);
+//		translate.setDuration(ANIMATION_DURATION_SLOW);
+//		translate.setFillAfter(true);
+//		mSettingLinearLayout.startAnimation(translate);
+//		mSettingLinearLayout.getAnimation().setAnimationListener(
+//				new Animation.AnimationListener() {
+//
+//					@Override
+//					public void onAnimationStart(Animation anim) {
+//
+//					}
+//
+//					@Override
+//					public void onAnimationRepeat(Animation animation) {
+//
+//					}
+//
+//					@Override
+//					public void onAnimationEnd(Animation anima) {
+//						TranslateAnimation animation = new TranslateAnimation(
+//								0, TRANSLATE_ANIMATION_WIDTH - mWidth, 0, 0);
+//						animation.setDuration(ANIMATION_DURATION_FAST);
+//						animation.setFillAfter(true);
+//						mMainLinearLayout.startAnimation(animation);
+//						mSlided = true;
+//					}
+//				});
+//	}
+//
+//	/**
+//	 * 滑进侧边栏
+//	 */
+//	private void slideIn() {
+//		TranslateAnimation translate = new TranslateAnimation(
+//				TRANSLATE_ANIMATION_WIDTH, mWidth, 0, 0);
+//		translate.setDuration(ANIMATION_DURATION_FAST);
+//		// 动画完成时停在结束位置
+//		translate.setFillAfter(true);
+//		mSettingLinearLayout.startAnimation(translate);
+//		mSettingLinearLayout.getAnimation().setAnimationListener(
+//				new Animation.AnimationListener() {
+//
+//					@Override
+//					public void onAnimationStart(Animation animation) {
+//						TranslateAnimation mainAnimation = new TranslateAnimation(
+//								-mWidth + TRANSLATE_ANIMATION_WIDTH, 0, 0, 0);
+//						mainAnimation.setDuration(ANIMATION_DURATION_SLOW);
+//						mainAnimation.setFillAfter(true);
+//						mMainLinearLayout.startAnimation(mainAnimation);
+//					}
+//
+//					@Override
+//					public void onAnimationRepeat(Animation animation) {
+//
+//					}
+//
+//					@Override
+//					public void onAnimationEnd(Animation animation) {
+//						mSlided = false;
+//					}
+//				});
+//
+//	}
+//
+//	@Override
+//	public boolean onContextItemSelected(MenuItem item) {
+//		if (mSlided) {
+//			slideIn();
+//		} else {
+//			slideOut();
+//		}
+//		return true;
+//	}
+//
+//	@Override
+//	public boolean onKeyDown(int keyCode, KeyEvent event) {
+//		if (keyCode == KeyEvent.KEYCODE_BACK && mSlided) {
+//			slideIn();
+//			return true;
+//		}
+//		return super.onKeyDown(keyCode, event);
+//	}
 
 	/**
 	 * 销毁之前

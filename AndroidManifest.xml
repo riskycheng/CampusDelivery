@@ -34,7 +34,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.chengjian.vgoo2.FragmentTabActivity"
+            android:name="com.chengjian.vgoo2.SplashActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -46,14 +46,19 @@
             android:name="com.chengjian.utils.QueryFromWaycodeActivity"
             android:theme="@android:style/Theme.Dialog" >
         </activity>
-         <activity
+        <activity
             android:name="com.chengjian.utils.QueryFromMobileActivity"
             android:theme="@android:style/Theme.Dialog" >
         </activity>
-        
-          <activity
+        <activity
             android:name="com.chengjian.utils.LoadingActivity"
             android:theme="@android:style/Theme.Dialog" >
+        </activity>
+        <activity android:name="com.chengjian.vgoo2.FragmentTabActivity" >
+        </activity>
+        <activity android:name="com.chengjian.vgoo2.WelcomeActivity" >
+        </activity>
+        <activity android:name="com.chengjian.vgoo2.LoginActivity" >
         </activity>
     </application>
 

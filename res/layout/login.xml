@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:orientation="vertical" 
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent" 
+    android:background="@drawable/login_bg">
+    
+<!--     <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="10dp"
+        android:paddingLeft="25dp"
+        android:paddingRight="25dp"
+        android:paddingTop="35dp"
+        android:gravity="center" >
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/logo" />
+        <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="fill_parent"
+        	android:gravity="center"
+	        android:text="V-GOO 校园谷"
+	        android:padding="10dp" />
+    </LinearLayout> -->
+    
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="220dp"
+        android:gravity="center_vertical"
+	    android:layout_gravity="center_vertical" >
+	    <TableLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+		    <TableRow>
+		        <EditText  
+		            android:id="@+id/username" 
+		            android:layout_width="fill_parent" 
+		            android:layout_height="wrap_content"
+		            android:layout_weight="1" 
+		            android:hint="用户名" 
+		            android:singleLine="true" 
+		            android:background="@drawable/edittext_bg" />
+		    </TableRow>
+		    <TableRow android:paddingTop="5dp">
+<!-- 			    <TextView
+			        android:layout_width="wrap_content"
+			        android:layout_height="wrap_content"
+			        android:layout_weight="0.3"
+			        android:text="密码"
+			        android:textSize="20sp" /> -->
+		        <EditText  
+		            android:id="@+id/password" 
+		            android:layout_width="fill_parent" 
+		            android:layout_height="wrap_content"
+		            android:layout_weight="1" 
+		            android:password="true" 
+		            android:singleLine="true" 
+		            android:hint="密码"
+		            android:background="@drawable/edittext_bg" />
+			</TableRow>
+		</TableLayout>
+	</LinearLayout>
+	
+	<LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="10dp"
+        android:gravity="center" >
+        <Button  
+            android:id="@+id/login" 
+            android:layout_width="fill_parent" 
+            android:layout_height="50dp" 
+            android:text="登 录"
+            android:textSize="22sp"
+	        android:textColor="@color/white"
+	        android:background="@drawable/blue_button_clicked" />
+    </LinearLayout>
+    
+    <LinearLayout
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:orientation="horizontal"
+	    android:paddingBottom="20dip"
+	    android:gravity="bottom|center_horizontal"
+	    android:layout_gravity="bottom|center_horizontal" >
+	    <TextView
+	        android:id="@+id/copyright"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:gravity="center"
+	        android:textSize="10sp"
+	        android:textColor="@color/gray" />
+    </LinearLayout>
+</LinearLayout> 

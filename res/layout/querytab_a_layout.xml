@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_grey"
+    android:orientation="vertical" >
+
+    <!-- 输入运单号查询 -->
+
+    <EditText
+        android:id="@+id/EditText_yundanhao"
+        android:layout_width="fill_parent"
+        android:layout_height="40dip"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:layout_marginTop="20dip"
+        android:background="@drawable/bg_edittext"
+        android:editable="false"
+        android:gravity="center_horizontal|center_vertical"
+        android:hint="输入查询运单号"
+        android:singleLine="true" />
+
+    <!-- 显示查询结果信息 -->
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginLeft="15dip"
+        android:layout_marginRight="15dip"
+        android:layout_marginTop="20dip"
+        android:background="@drawable/normal_shape"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="35dip"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:paddingTop="6dip"
+            android:text="查询结果"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/light_grey" >
+        </LinearLayout>
+        <!-- 第一栏 -->
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="170dp"
+                android:layout_height="35dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="40dip"
+                android:gravity="left"
+                android:paddingTop="6dip"
+                android:text="快递公司:"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tab_a_TextView_deliveryName"
+                android:layout_width="170dp"
+                android:layout_height="35dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="150dip"
+                android:gravity="left"
+                android:paddingTop="6dip"
+                android:text="待查"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/light_grey" >
+        </LinearLayout>
+
+        <!-- part 2 -->
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="170dp"
+                android:layout_height="35dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="40dip"
+                android:gravity="left"
+                android:paddingTop="6dip"
+                android:text="收件姓名:"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tab_a_TextView_RecName"
+                android:layout_width="170dp"
+                android:layout_height="35dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="150dip"
+                android:gravity="left"
+                android:paddingTop="6dip"
+                android:text="待查"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/light_grey" >
+        </LinearLayout>
+
+        <!-- 第三栏 -->
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="170dp"
+                android:layout_height="35dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="40dip"
+                android:gravity="left"
+                android:paddingTop="6dip"
+                android:text="快递状态:"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tab_a_TextView_Status"
+                android:layout_width="170dp"
+                android:layout_height="35dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="150dip"
+                android:gravity="left"
+                android:paddingTop="6dip"
+                android:text="待查"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/light_grey" >
+        </LinearLayout>
+
+        <!-- 第四栏 -->
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="170dp"
+                android:layout_height="35dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="40dip"
+                android:gravity="left"
+                android:paddingTop="6dip"
+                android:text="手机号码:"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tab_a_TextView_Time"
+                android:layout_width="170dp"
+                android:layout_height="35dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="150dip"
+                android:gravity="left"
+                android:paddingTop="6dip"
+                android:text="待查"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- 查询结果结束 -->
+    </LinearLayout>
+
+    <!-- 提交按钮，如果有结果的话，说明有余件 -->
+
+    <Button
+        android:id="@+id/Button_submit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="40dip"
+        android:background="@drawable/submit_btn_selector" />
+
+</LinearLayout>

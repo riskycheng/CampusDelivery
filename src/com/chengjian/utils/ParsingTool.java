@@ -16,6 +16,8 @@ public class ParsingTool {
 	
 	/**
 	 * function:将查询的Json结果解析成Express对象
+	 * @param jsonStr 
+	 * 输入查询返回的json字符串
 	 * @author chengjian
 	 */
 	public static ArrayList<Express> Json2Expresses(String jsonStr){
@@ -26,13 +28,12 @@ public class ParsingTool {
 			for(int i = 0; i < length; i++){
 				JSONObject jsonObject = jsonArray.getJSONObject(i);
 				Express express = new Express();
-				express.setExpressName(jsonObject.getInt("delivery_id"));
+				express.setExpressName(jsonObject.getString("name"));
 				express.setFetchTime(jsonObject.getString("tihuo_time"));
 				express.setRecName(jsonObject.getString("rec_name"));
 				express.setExpressStatus(jsonObject.getBoolean("bill_status"));
 				result.add(express);
 			}
-			Log.e("array's length:", result.size()+"");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

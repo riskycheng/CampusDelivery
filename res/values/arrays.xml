@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    
     <!-- fragment setting -->
     <string-array name="setting_items">
         <item>用户信息</item>
@@ -11,11 +10,11 @@
         <item>了解我们</item>
         <item>退出</item>
     </string-array>
-    
-    
+
     <!-- for the type of query -->
     <string-array name="QueryType">
-        <item>运单号</item>
         <item>手机号</item>
+        <item>运单号</item>
     </string-array>
+
 </resources>
