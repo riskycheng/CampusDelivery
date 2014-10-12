@@ -44,21 +44,25 @@
         </activity>
         <activity
             android:name="com.chengjian.utils.QueryFromWaycodeActivity"
-            android:theme="@android:style/Theme.Dialog" >
+            android:theme="@style/MyDialogStyle" >
         </activity>
         <activity
             android:name="com.chengjian.utils.QueryFromMobileActivity"
-            android:theme="@android:style/Theme.Dialog" >
+            android:theme="@style/MyDialogStyle" >
         </activity>
         <activity
             android:name="com.chengjian.utils.LoadingActivity"
-            android:theme="@android:style/Theme.Dialog" >
+            android:theme="@style/MyDialogStyle" >
         </activity>
         <activity android:name="com.chengjian.vgoo2.FragmentTabActivity" >
         </activity>
         <activity android:name="com.chengjian.vgoo2.WelcomeActivity" >
         </activity>
         <activity android:name="com.chengjian.vgoo2.LoginActivity" >
+        </activity>
+        <activity android:name="com.chengjian.vgoo2.HelpActivity" >
+        </activity>
+        <activity android:name="com.chengjian.vgoo2.SettingActivity" >
         </activity>
     </application>
 

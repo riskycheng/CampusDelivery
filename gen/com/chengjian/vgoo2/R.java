@@ -89,82 +89,89 @@ public final class R {
         public static final int app_list_corner_shape_up=0x7f020008;
         public static final int app_title_bar=0x7f020009;
         public static final int app_title_bar_line=0x7f02000a;
-        public static final int background_login=0x7f02000b;
-        public static final int background_login_div_bg=0x7f02000c;
-        public static final int bg_edittext=0x7f02000d;
-        public static final int bg_edittext_focused=0x7f02000e;
-        public static final int bg_edittext_normal=0x7f02000f;
-        public static final int blue_button_clicked=0x7f020010;
-        public static final int btn_bg=0x7f020011;
-        public static final int button_blue=0x7f020012;
-        public static final int button_blue_pressed=0x7f020013;
-        public static final int button_green_normal=0x7f020014;
-        public static final int button_green_pressed=0x7f020015;
-        public static final int button_normal=0x7f020016;
-        public static final int button_pressed=0x7f020017;
-        public static final int edittext_bg=0x7f020018;
-        public static final int ems=0x7f020019;
-        public static final int exit_button_click=0x7f02001a;
-        public static final int ic_launcher=0x7f02001b;
-        public static final int icon_home_nor=0x7f02001c;
-        public static final int icon_home_sel=0x7f02001d;
-        public static final int icon_message_nor=0x7f02001e;
-        public static final int icon_message_sel=0x7f02001f;
-        public static final int icon_selfinfo_nor=0x7f020020;
-        public static final int icon_selfinfo_sel=0x7f020021;
-        public static final int lianbang=0x7f020022;
-        public static final int loading_bg=0x7f020023;
-        public static final int login_bg=0x7f020024;
-        public static final int maintab_toolbar_bg=0x7f020025;
-        public static final int mm_listitem=0x7f020026;
-        public static final int mm_listitem_grey_normal=0x7f020027;
-        public static final int mm_listitem_normal=0x7f020028;
-        public static final int mm_listitem_pressed=0x7f020029;
-        public static final int mm_listitem_simple=0x7f02002a;
-        public static final int normal_shape=0x7f02002b;
-        public static final int other=0x7f02002c;
-        public static final int refresh_bg=0x7f02002d;
-        public static final int selector_progress=0x7f02002e;
-        public static final int selector_tab_bg=0x7f02002f;
-        public static final int selector_tab_contacts=0x7f020030;
-        public static final int selector_tab_home=0x7f020031;
-        public static final int selector_tab_icon=0x7f020032;
-        public static final int selector_tab_message=0x7f020033;
-        public static final int setting_item=0x7f020034;
-        public static final int shape_bg_listview=0x7f020035;
-        public static final int shentong=0x7f020036;
-        public static final int shunfeng=0x7f020037;
-        public static final int splash_view=0x7f020038;
-        public static final int submit_btn_selector=0x7f020039;
-        public static final int tab_icon_sel=0x7f02003a;
-        public static final int tab_item_pressed=0x7f02003b;
-        public static final int tab_widget_bg=0x7f02003c;
-        public static final int tiantain=0x7f02003d;
-        public static final int warning=0x7f02003e;
-        public static final int welcome_view_01=0x7f02003f;
-        public static final int welcome_view_02=0x7f020040;
-        public static final int welcome_view_03=0x7f020041;
-        public static final int yuantong=0x7f020042;
-        public static final int yunda=0x7f020043;
-        public static final int zhaijisong=0x7f020044;
-        public static final int zhongtong=0x7f020045;
+        public static final int arrow_right=0x7f02000b;
+        public static final int background_login=0x7f02000c;
+        public static final int background_login_div_bg=0x7f02000d;
+        public static final int bg_edittext=0x7f02000e;
+        public static final int bg_edittext_focused=0x7f02000f;
+        public static final int bg_edittext_normal=0x7f020010;
+        public static final int blue_button_clicked=0x7f020011;
+        public static final int btn_bg=0x7f020012;
+        public static final int button_blue=0x7f020013;
+        public static final int button_blue_pressed=0x7f020014;
+        public static final int button_green_normal=0x7f020015;
+        public static final int button_green_pressed=0x7f020016;
+        public static final int button_normal=0x7f020017;
+        public static final int button_pressed=0x7f020018;
+        public static final int edittext_bg=0x7f020019;
+        public static final int ems=0x7f02001a;
+        public static final int exit_button_click=0x7f02001b;
+        public static final int ic_launcher=0x7f02001c;
+        public static final int icon_home_nor=0x7f02001d;
+        public static final int icon_home_sel=0x7f02001e;
+        public static final int icon_message_nor=0x7f02001f;
+        public static final int icon_message_sel=0x7f020020;
+        public static final int icon_selfinfo_nor=0x7f020021;
+        public static final int icon_selfinfo_sel=0x7f020022;
+        public static final int icon_setting_nor=0x7f020023;
+        public static final int icon_setting_sel=0x7f020024;
+        public static final int lianbang=0x7f020025;
+        public static final int loading_bg=0x7f020026;
+        public static final int login_bg=0x7f020027;
+        public static final int maintab_toolbar_bg=0x7f020028;
+        public static final int mm_listitem=0x7f020029;
+        public static final int mm_listitem_grey_normal=0x7f02002a;
+        public static final int mm_listitem_normal=0x7f02002b;
+        public static final int mm_listitem_pressed=0x7f02002c;
+        public static final int mm_listitem_simple=0x7f02002d;
+        public static final int normal_shape=0x7f02002e;
+        public static final int other=0x7f02002f;
+        public static final int refresh_bg=0x7f020030;
+        public static final int selector_progress=0x7f020031;
+        public static final int selector_tab_bg=0x7f020032;
+        public static final int selector_tab_contacts=0x7f020033;
+        public static final int selector_tab_home=0x7f020034;
+        public static final int selector_tab_icon=0x7f020035;
+        public static final int selector_tab_message=0x7f020036;
+        public static final int selector_tab_setting=0x7f020037;
+        public static final int setting_click_selector=0x7f020038;
+        public static final int setting_item=0x7f020039;
+        public static final int shape_bg_listview=0x7f02003a;
+        public static final int shentong=0x7f02003b;
+        public static final int shunfeng=0x7f02003c;
+        public static final int splash_view=0x7f02003d;
+        public static final int submit_btn_selector=0x7f02003e;
+        public static final int tab_icon_sel=0x7f02003f;
+        public static final int tab_item_pressed=0x7f020040;
+        public static final int tab_widget_bg=0x7f020041;
+        public static final int tiantain=0x7f020042;
+        public static final int warning=0x7f020043;
+        public static final int welcome_view_01=0x7f020044;
+        public static final int welcome_view_02=0x7f020045;
+        public static final int welcome_view_03=0x7f020046;
+        public static final int yuantong=0x7f020047;
+        public static final int yunda=0x7f020048;
+        public static final int zhaijisong=0x7f020049;
+        public static final int zhongtong=0x7f02004a;
     }
     public static final class id {
-        public static final int Button_submit=0x7f0c0022;
+        public static final int Btn_queryTabA=0x7f0c001e;
+        public static final int Btn_queryTabB=0x7f0c0026;
+        public static final int Button_submit=0x7f0c0023;
         public static final int EditText_yundanhao=0x7f0c001d;
-        public static final int Edittext_queryNumber=0x7f0c0024;
-        public static final int ListView_all_Results=0x7f0c0025;
-        public static final int Spinner_queryType=0x7f0c0023;
+        public static final int Edittext_queryNumber=0x7f0c0025;
+        public static final int ListView_all_Results=0x7f0c0027;
+        public static final int Spinner_queryType=0x7f0c0024;
         public static final int company_spinner=0x7f0c000c;
         public static final int containertabcontent=0x7f0c0007;
         public static final int copyright=0x7f0c001c;
-        public static final int exit=0x7f0c002e;
-        public static final int help=0x7f0c002d;
+        public static final int exit=0x7f0c0033;
+        public static final int help=0x7f0c0032;
         public static final int icon=0x7f0c0000;
         public static final int in_store=0x7f0c0011;
         public static final int item=0x7f0c0003;
-        public static final int item_content=0x7f0c002a;
-        public static final int item_title=0x7f0c0029;
+        public static final int item_content=0x7f0c002c;
+        public static final int item_title=0x7f0c002b;
         public static final int linearLayout1=0x7f0c0008;
         public static final int list=0x7f0c0005;
         public static final int list1=0x7f0c0009;
@@ -179,24 +186,27 @@ public final class R {
         public static final int mail_no_edittext=0x7f0c0002;
         public static final int main=0x7f0c0006;
         public static final int manual_input=0x7f0c000f;
-        public static final int ok=0x7f0c0027;
+        public static final int ok=0x7f0c0029;
         public static final int password=0x7f0c001a;
         public static final int progressBar1=0x7f0c0017;
         public static final int receiver_mobilephone=0x7f0c000e;
         public static final int receiver_name=0x7f0c000d;
-        public static final int relativeLayout1=0x7f0c0028;
+        public static final int relativeLayout1=0x7f0c002a;
         public static final int replace=0x7f0c0010;
-        public static final int serialNumberStart=0x7f0c0026;
+        public static final int serialNumberStart=0x7f0c0028;
         public static final int setting=0x7f0c0004;
-        public static final int startLinearLayout=0x7f0c002c;
-        public static final int tab_a_TextView_RecName=0x7f0c001f;
-        public static final int tab_a_TextView_Status=0x7f0c0020;
-        public static final int tab_a_TextView_Time=0x7f0c0021;
-        public static final int tab_a_TextView_deliveryName=0x7f0c001e;
+        public static final int setting_01_setStartNum=0x7f0c002d;
+        public static final int setting_02_help=0x7f0c002e;
+        public static final int setting_03_signOut=0x7f0c002f;
+        public static final int startLinearLayout=0x7f0c0031;
+        public static final int tab_a_TextView_RecName=0x7f0c0020;
+        public static final int tab_a_TextView_Status=0x7f0c0021;
+        public static final int tab_a_TextView_Time=0x7f0c0022;
+        public static final int tab_a_TextView_deliveryName=0x7f0c001f;
         public static final int textView=0x7f0c0018;
         public static final int title=0x7f0c0001;
         public static final int username=0x7f0c0019;
-        public static final int viewPager=0x7f0c002b;
+        public static final int viewPager=0x7f0c0030;
     }
     public static final class layout {
         public static final int all_tab_bottom_layout=0x7f030000;
@@ -213,13 +223,15 @@ public final class R {
         public static final int querytab_b_layout=0x7f03000b;
         public static final int querytab_home_layout=0x7f03000c;
         public static final int setting_activity=0x7f03000d;
-        public static final int simple_list_item_1=0x7f03000e;
-        public static final int single_tab_bottom_layout=0x7f03000f;
-        public static final int splash_activity=0x7f030010;
-        public static final int welcome_activity=0x7f030011;
-        public static final int welcome_view_01=0x7f030012;
-        public static final int welcome_view_02=0x7f030013;
-        public static final int welcome_view_03=0x7f030014;
+        public static final int setting_tab_bottom_layout=0x7f03000e;
+        public static final int simple_list_item_1=0x7f03000f;
+        public static final int single_tab_bottom_layout=0x7f030010;
+        public static final int splash_activity=0x7f030011;
+        public static final int tab_about_layout=0x7f030012;
+        public static final int welcome_activity=0x7f030013;
+        public static final int welcome_view_01=0x7f030014;
+        public static final int welcome_view_02=0x7f030015;
+        public static final int welcome_view_03=0x7f030016;
     }
     public static final class menu {
         public static final int main=0x7f0b0000;
@@ -234,15 +246,6 @@ public final class R {
     }
     public static final class style {
         /** 
-        Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
-    
-
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        
-
         Base application theme for API 11+. This theme completely replaces
         AppBaseTheme from res/values/styles.xml on API 11+ devices.
     
@@ -254,10 +257,13 @@ public final class R {
     
  API 14 theme customizations can go here. 
          */
-        public static final int AppBaseTheme=0x7f0a0000;
-        /**  Application theme. 
- All customizations that are NOT specific to a particular API-level can go here. 
+        public static final int AppBaseTheme=0x7f0a0005;
+        public static final int AppTheme=0x7f0a0000;
+        /** 模糊
          */
-        public static final int AppTheme=0x7f0a0001;
+        public static final int MyDialogStyle=0x7f0a0002;
+        public static final int Theme=0x7f0a0003;
+        public static final int Theme_Tabhost=0x7f0a0004;
+        public static final int splash_style=0x7f0a0001;
     }
 }

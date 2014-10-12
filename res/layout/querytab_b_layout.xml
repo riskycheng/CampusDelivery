@@ -6,35 +6,55 @@
     android:orientation="vertical" >
 
     <LinearLayout
-        android:layout_marginTop="20dip"
         android:layout_width="fill_parent"
-        android:layout_height="60dip"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
         android:orientation="horizontal" >
 
-        <Spinner
-            android:layout_weight="1"
-            android:id="@+id/Spinner_queryType"
-            android:layout_width="120dip"
-            android:layout_height="wrap_content" >
-        </Spinner>
+        <LinearLayout
+            android:layout_weight="8"
+            android:layout_marginLeft="5dip"
+            android:layout_gravity="left"
+            android:layout_width="300dip"
+            android:layout_height="100dip"
+            android:orientation="vertical" >
 
-        <EditText
-            android:layout_marginTop="2dip"
-            android:layout_marginRight="10dip"
+            <Spinner
+                android:id="@+id/Spinner_queryType"
+                android:layout_width="300dip"
+                android:layout_height="50dip"
+                android:layout_gravity="center_horizontal" >
+            </Spinner>
+
+            <EditText
+                android:id="@+id/Edittext_queryNumber"
+                android:layout_width="280dip"
+                android:layout_height="40dip"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="10dip"
+                android:layout_marginRight="10dip"
+                android:layout_marginTop="2dip"
+                android:background="@drawable/bg_edittext"
+                android:gravity="center_horizontal|center_vertical"
+                android:hint="输入查询手机号" />
+        </LinearLayout>
+        <Button 
+            android:id="@+id/Btn_queryTabB"
+            android:layout_weight="0"
+            android:layout_marginTop="-2dip"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="10dip"
-            android:layout_weight="6"
-            android:id="@+id/Edittext_queryNumber"
-            android:layout_width="fill_parent"
-            android:layout_height="40dip"
-            android:background="@drawable/bg_edittext"
-            android:editable="false"
-            android:hint="输入查询手机号" />
+            android:layout_width="90dip"
+            android:layout_height="90dip"
+            android:text="查询"/>
+        
     </LinearLayout>
 
     <ListView
         android:id="@+id/ListView_all_Results"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" >
+        android:layout_height="fill_parent"
+        android:layout_marginTop="10dip" >
     </ListView>
 
 </LinearLayout>

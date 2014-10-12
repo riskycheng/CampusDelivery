@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/light_grey"
+    android:orientation="vertical" >
+
+    <!-- 设置框 开始 -->
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginLeft="15dip"
+        android:layout_marginRight="15dip"
+        android:layout_marginTop="30dip"
+        android:background="@drawable/normal_shape"
+        android:orientation="vertical" >
+
+        <!-- 第一栏 -->
+
+        <FrameLayout
+            android:id="@+id/setting_01_setStartNum"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/setting_click_selector"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="170dp"
+                android:layout_height="50dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dip"
+                android:gravity="center_vertical"
+                android:paddingTop="6dip"
+                android:text="设置快件起始编号"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="30dip"
+                android:layout_height="30dip"
+                android:layout_gravity="right|center_vertical"
+                android:layout_marginRight="10dip"
+                android:background="@drawable/arrow_right"
+                android:gravity="center_vertical" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/light_grey" >
+        </LinearLayout>
+
+        <!-- part 2 -->
+
+        <FrameLayout
+            android:id="@+id/setting_02_help"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/setting_click_selector"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="170dp"
+                android:layout_height="50dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dip"
+                android:gravity="center_vertical"
+                android:paddingTop="6dip"
+                android:text="帮助"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="30dip"
+                android:layout_height="30dip"
+                android:layout_gravity="right|center_vertical"
+                android:layout_marginRight="10dip"
+                android:background="@drawable/arrow_right"
+                android:gravity="center_vertical" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/light_grey" >
+        </LinearLayout>
+
+        <!-- 第三栏 -->
+
+        <FrameLayout
+            android:id="@+id/setting_03_signOut"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/setting_click_selector"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="170dp"
+                android:layout_height="50dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dip"
+                android:gravity="center_vertical"
+                android:paddingTop="6dip"
+                android:text="退出当前帐号"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="30dip"
+                android:layout_height="30dip"
+                android:layout_gravity="right|center_vertical"
+                android:layout_marginRight="10dip"
+                android:background="@drawable/arrow_right"
+                android:gravity="center_vertical" />
+        </FrameLayout>
+
+        <!-- 设置 界面结束 -->
+    </LinearLayout>
+
+</RelativeLayout>

@@ -13,7 +13,7 @@ import android.view.ViewGroup;
  * @email huangsanm@gmail.com
  * @desc 所有信息列表
  */
-public class FirstFragment extends Fragment {
+public class HomeFragment extends Fragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

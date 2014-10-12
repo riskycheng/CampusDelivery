@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Window;
 import android.widget.TextView;
 import com.chengjian.utils.ConstantParams;
 
@@ -44,6 +45,7 @@ public class QueryFromWaycodeActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);//…Ë÷√ ˙∆¡
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.loading);
 		textView = (TextView)findViewById(R.id.textView);
 		

@@ -1,20 +1,33 @@
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!--
-        Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
-    -->
-    <style name="AppBaseTheme" parent="android:Theme.Light">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
+    <style name="AppTheme" parent="android:Theme.Light" />
+    
+    <style name="splash_style" parent="@android:style/Theme.NoTitleBar"/>
+    
+    <style name="MyDialogStyle">
+        <item name="android:windowBackground">@android:color/transparent</item><!-- 背景透明   -->
+        <item name="android:windowFrame">@null</item><!--边框-->
+        <item name="android:windowNoTitle">true</item><!--无标题-->
+        <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->
+        <item name="android:windowIsTranslucent">true</item><!--半透明-->
+        <item name="android:windowContentOverlay">@null</item><!--内容覆盖 -->
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item><!-- 窗口样式Dialog -->
+        <item name="android:backgroundDimEnabled">true</item><!--模糊-->
+    </style>
+    
+    <style name="Theme" parent="@android:style/Theme"></style>
+    
+    <style name="Theme.Tabhost">
+        <item name="android:windowContentOverlay">@null</item>
     </style>
 
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-    </style>
+<!--     <style name="CustomWindowTitleBackground">
+       <item name="android:background">#565656</item>
+	</style>
 
+	<style name="MyTitle" parent="android:Theme">
+	    <item name="android:windowTitleSize">50dp</item>
+	    <item name="android:windowTitleBackgroundStyle">@style/CustomWindowTitleBackground</item>
+	</style> -->
 </resources>

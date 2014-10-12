@@ -66,22 +66,30 @@ public class FragmentTabActivity extends FragmentActivity {
 
 		mTabManager = new TabManager(this, mTabHost, R.id.containertabcontent);
 
-		RelativeLayout message = (RelativeLayout) getLayoutInflater().inflate(
+		//1st Tab
+		RelativeLayout HomeTab = (RelativeLayout) getLayoutInflater().inflate(
 				R.layout.home_tab_bottom_layout, null);
 		mTabManager.addTab(
-				mTabHost.newTabSpec("Message").setIndicator(message),
-				FirstFragment.class, null);
+				mTabHost.newTabSpec("Home").setIndicator(HomeTab),
+				HomeFragment.class, null);
 		
-		RelativeLayout app = (RelativeLayout) getLayoutInflater().inflate(
+		//2nd Tab
+		RelativeLayout QueryATab = (RelativeLayout) getLayoutInflater().inflate(
 				R.layout.single_tab_bottom_layout, null);
-		mTabManager.addTab(mTabHost.newTabSpec("Apps").setIndicator(app),
+		mTabManager.addTab(mTabHost.newTabSpec("QueryATab").setIndicator(QueryATab),
 				QueryAFragment.class, null);
 
-		RelativeLayout contacts = (RelativeLayout) getLayoutInflater().inflate(
+		//3rd Tab
+		RelativeLayout QueryBTab = (RelativeLayout) getLayoutInflater().inflate(
 				R.layout.all_tab_bottom_layout, null);
-		mTabManager.addTab(mTabHost.newTabSpec("Contact")
-				.setIndicator(contacts), QueryBFragment.class, null);
+		mTabManager.addTab(mTabHost.newTabSpec("QueryBTab")
+				.setIndicator(QueryBTab), QueryBFragment.class, null);
 
+		//4th Tab
+		RelativeLayout AboutTab = (RelativeLayout) getLayoutInflater().inflate(
+				R.layout.setting_tab_bottom_layout, null);
+		mTabManager.addTab(mTabHost.newTabSpec("AboutTab")
+				.setIndicator(AboutTab), AboutTabFragment.class, null);
 		
 
 		mSettingLinearLayout = (LinearLayout) findViewById(R.id.setting);

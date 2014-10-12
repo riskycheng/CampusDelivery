@@ -39,6 +39,7 @@ public class QueryAFragment extends Fragment {
 	private TextView TextView_Status;
 	private TextView TextView_Time;
 	private Button Button_submit;
+	private Button Button_query;
 	public String mailNoStr;
 	public String QueryResult;
 
@@ -69,16 +70,20 @@ public class QueryAFragment extends Fragment {
 		EditText_yundanhao = (EditText) view
 				.findViewById(R.id.EditText_yundanhao);
 		EditText_yundanhao.requestFocus();
-		EditText_yundanhao.setOnClickListener(new myClickListener());
-
-		TextView_DeliveryName = (TextView) view.findViewById(R.id.tab_a_TextView_deliveryName);
-		TextView_RecName = (TextView) view.findViewById(R.id.tab_a_TextView_RecName);
-		TextView_Status = (TextView) view.findViewById(R.id.tab_a_TextView_Status);
+		TextView_DeliveryName = (TextView) view
+				.findViewById(R.id.tab_a_TextView_deliveryName);
+		TextView_RecName = (TextView) view
+				.findViewById(R.id.tab_a_TextView_RecName);
+		TextView_Status = (TextView) view
+				.findViewById(R.id.tab_a_TextView_Status);
 		TextView_Time = (TextView) view.findViewById(R.id.tab_a_TextView_Time);
-		
+
 		Button_submit = (Button) view.findViewById(R.id.Button_submit);
 		Button_submit.setOnClickListener(new myClickListener());
 		QueryResult = "";
+
+		Button_query = (Button) view.findViewById(R.id.Btn_queryTabA);
+		Button_query.setOnClickListener(new myClickListener());
 	}
 
 	/**
@@ -91,50 +96,52 @@ public class QueryAFragment extends Fragment {
 		@Override
 		public void onClick(View v) {
 			switch (v.getId()) {
-			case R.id.EditText_yundanhao:
-				LayoutInflater inflater = LayoutInflater.from(mActivity);
-				final View view = inflater.inflate(R.layout.edittext, null);
-				new AlertDialog.Builder(mActivity)
-						.setTitle("手动输入运单号：")
-						.setView(view)
-						.setNegativeButton("取消", null)
-						.setPositiveButton("确定",
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-										EditText mailNoEditText = (EditText) view
-												.findViewById(R.id.mail_no_edittext);
-										mailNoStr = mailNoEditText.getText()
-												.toString().trim();
-										if (!mailNoStr.equals("")) {
-											if (isLetterOrDigit(mailNoStr)) {
-												EditText_yundanhao
-														.setText(mailNoStr);
-												// 手动输入完毕直接查询快件
-												Intent intent = new Intent(mActivity, QueryFromWaycodeActivity.class);
-												intent.putExtra("mailNo", mailNoStr);
-												startActivityForResult(intent, 2);
-												
-
-												
-
-											} else {
-												Toast.makeText(mActivity,
-														"运单号只能包含字母或数字，请重新输入！",
-														Toast.LENGTH_SHORT)
-														.show();
-											}
-										} else {
-											EditText_yundanhao
-													.setText(mailNoStr);
-										}
-									}
-								}).show();
-
-				break;
+			/*
+			 * case R.id.EditText_yundanhao: LayoutInflater inflater =
+			 * LayoutInflater.from(mActivity); final View view =
+			 * inflater.inflate(R.layout.edittext, null); new
+			 * AlertDialog.Builder(mActivity) .setTitle("手动输入运单号：")
+			 * .setView(view) .setNegativeButton("取消", null)
+			 * .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+			 * 
+			 * @Override public void onClick(DialogInterface dialog, int which)
+			 * { EditText mailNoEditText = (EditText) view
+			 * .findViewById(R.id.mail_no_edittext); mailNoStr =
+			 * mailNoEditText.getText() .toString().trim(); if
+			 * (!mailNoStr.equals("")) { if (isLetterOrDigit(mailNoStr)) {
+			 * EditText_yundanhao .setText(mailNoStr); // 手动输入完毕直接查询快件 Intent
+			 * intent = new Intent( mActivity, QueryFromWaycodeActivity.class);
+			 * intent.putExtra("mailNo", mailNoStr);
+			 * startActivityForResult(intent, 2);
+			 * 
+			 * } else { Toast.makeText(mActivity, "运单号只能包含字母或数字，请重新输入！",
+			 * Toast.LENGTH_SHORT) .show(); } } else { EditText_yundanhao
+			 * .setText(mailNoStr); } } }).show();
+			 * 
+			 * break;
+			 */
 			case R.id.Button_submit:
 				Toast.makeText(mActivity, "submit", Toast.LENGTH_SHORT).show();
+				break;
+
+			case R.id.Btn_queryTabA:
+
+				mailNoStr = EditText_yundanhao.getText().toString().trim();
+				if (!mailNoStr.equals("")) {
+					if (isLetterOrDigit(mailNoStr)) {
+						// 手动输入完毕直接查询快件
+						Intent intent = new Intent(mActivity,
+								QueryFromWaycodeActivity.class);
+						intent.putExtra("mailNo", mailNoStr);
+						startActivityForResult(intent, 2);
+
+					} else {
+						Toast.makeText(mActivity, "运单号只能包含字母或数字，请重新输入！",
+								Toast.LENGTH_SHORT).show();
+					}
+				}else{
+					Toast.makeText(mActivity, "输入不能为空!", Toast.LENGTH_SHORT).show();
+				}
 				break;
 			}
 		}
@@ -163,9 +170,9 @@ public class QueryAFragment extends Fragment {
 			if (resultCode == Activity.RESULT_OK) {
 				String httpResult = data
 						.getStringExtra(ConstantParams.EXTRA_QUERYBILL_RESULT);
-				Log.e("httpResult:", httpResult);
+				Log.e("QueryA:httpResult:", httpResult);
 				if (httpResult.equals("")) {
-					Toast.makeText(mActivity, "不存在!", Toast.LENGTH_SHORT)
+					Toast.makeText(mActivity, "不存在,请先入库!", Toast.LENGTH_SHORT)
 							.show();
 					TextView_DeliveryName.setText("无");
 					TextView_RecName.setText("无");
@@ -175,27 +182,28 @@ public class QueryAFragment extends Fragment {
 				}
 				// 转成Json
 				try {
-					
+
 					JSONObject jsonObject = new JSONObject(httpResult);
-					TextView_DeliveryName.setText(jsonObject.getString("companyName"));
+					TextView_DeliveryName.setText(jsonObject
+							.getString("companyName"));
 					TextView_RecName.setText(jsonObject.getString("recName"));
-					//解析状态
+					// 解析状态
 					int status = jsonObject.getInt("bill_status");
-					if(status == 0)
+					if (status == 0)
 						TextView_Status.setText("待到站");
-					else if(status == 1)
+					else if (status == 1)
 						TextView_Status.setText("已到站");
-					else if(status == 2)
+					else if (status == 2)
 						TextView_Status.setText("已预约取件");
-					else if(status == 3)
+					else if (status == 3)
 						TextView_Status.setText("已预约上门取件");
-					else if(status == 4)
+					else if (status == 4)
 						TextView_Status.setText("已提货");
-					else if(status == 5)
+					else if (status == 5)
 						TextView_Status.setText("站点拒收");
-					else if(status == 6)
+					else if (status == 6)
 						TextView_Status.setText("客户拒收");
-					else if(status == 7)
+					else if (status == 7)
 						TextView_Status.setText("预约件已找到");
 					else
 						TextView_Status.setText("未知");
