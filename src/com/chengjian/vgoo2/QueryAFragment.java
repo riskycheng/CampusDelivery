@@ -40,6 +40,7 @@ public class QueryAFragment extends Fragment {
 	private TextView TextView_Time;
 	private Button Button_submit;
 	private Button Button_query;
+	private Button Button_clear;
 	public String mailNoStr;
 	public String QueryResult;
 
@@ -84,6 +85,9 @@ public class QueryAFragment extends Fragment {
 
 		Button_query = (Button) view.findViewById(R.id.Btn_queryTabA);
 		Button_query.setOnClickListener(new myClickListener());
+		
+		Button_clear = (Button) view.findViewById(R.id.Btn_clear);
+		Button_clear.setOnClickListener(new myClickListener());
 	}
 
 	/**
@@ -142,6 +146,11 @@ public class QueryAFragment extends Fragment {
 				}else{
 					Toast.makeText(mActivity, "输入不能为空!", Toast.LENGTH_SHORT).show();
 				}
+				break;
+				
+			case R.id.Btn_clear:
+				//重置输入框
+				EditText_yundanhao.setText("");
 				break;
 			}
 		}

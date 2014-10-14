@@ -12,13 +12,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 public class AboutTabFragment extends Fragment {
 	private Activity mActivity;
-	private FrameLayout setting_setNum_FrameLayout, setting_help_FrameLayout,
-			setting_signOut_FrameLayout;
+	private FrameLayout setting_setNum_FrameLayout, setting_setSMS,
+			setting_help_FrameLayout, setting_signOut_FrameLayout;
 	SharedPreferences mySharedPreferences;
 	SharedPreferences.Editor editor;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -50,14 +52,20 @@ public class AboutTabFragment extends Fragment {
 		setting_setNum_FrameLayout = (FrameLayout) view
 				.findViewById(R.id.setting_01_setStartNum);
 		setting_setNum_FrameLayout.setOnClickListener(new myClickListener());
+
+		setting_setNum_FrameLayout = (FrameLayout) view
+				.findViewById(R.id.setting_02_setSMS);
+		setting_setNum_FrameLayout.setOnClickListener(new myClickListener());
+
 		setting_help_FrameLayout = (FrameLayout) view
-				.findViewById(R.id.setting_02_help);
+				.findViewById(R.id.setting_03_help);
 		setting_help_FrameLayout.setOnClickListener(new myClickListener());
 		setting_signOut_FrameLayout = (FrameLayout) view
-				.findViewById(R.id.setting_03_signOut);
+				.findViewById(R.id.setting_04_signOut);
 		setting_signOut_FrameLayout.setOnClickListener(new myClickListener());
-		
-		mySharedPreferences = mActivity.getSharedPreferences("myPreference",Activity.MODE_PRIVATE);
+
+		mySharedPreferences = mActivity.getSharedPreferences("myPreference",
+				Activity.MODE_PRIVATE);
 		editor = mySharedPreferences.edit();
 	}
 
@@ -69,33 +77,40 @@ public class AboutTabFragment extends Fragment {
 				startActivityForResult(new Intent(mActivity,
 						SettingActivity.class), 3);
 				break;
-
-			case R.id.setting_02_help:
+			case R.id.setting_02_setSMS:
+				Toast.makeText(mActivity, "功能升级中...", Toast.LENGTH_SHORT)
+						.show();
+				break;
+			case R.id.setting_03_help:
 				startActivityForResult(
 						new Intent(mActivity, HelpActivity.class), 4);
 				break;
 
-			case R.id.setting_03_signOut:
+			case R.id.setting_04_signOut:
 				new AlertDialog.Builder(mActivity)
-				.setTitle("退出当前帐号")
-				.setMessage("退出后将删除当前帐号信息，下次登录需要重新输入帐号。确定要退出吗？")
-				.setNegativeButton("取消", new DialogInterface.OnClickListener() {						
-					@Override
-					public void onClick(DialogInterface arg0, int arg1) {
-						arg0.cancel();
-					}
-				})
-				.setPositiveButton("确定", new DialogInterface.OnClickListener() {						
-					@Override
-					public void onClick(DialogInterface arg0, int arg1) {
-						editor.putInt("admin_id", 0);
-						editor.commit();
-						//V2.1.1 修改：退出当前帐号时，返回到登录界面
-						startActivity(new Intent(mActivity, LoginActivity.class));
-						mActivity.finish();
-					}
-				})
-				.show();
+						.setTitle("退出当前帐号")
+						.setMessage("退出后将删除当前帐号信息，下次登录需要重新输入帐号。确定要退出吗？")
+						.setNegativeButton("取消",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface arg0,
+											int arg1) {
+										arg0.cancel();
+									}
+								})
+						.setPositiveButton("确定",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface arg0,
+											int arg1) {
+										editor.putInt("admin_id", 0);
+										editor.commit();
+										// V2.1.1 修改：退出当前帐号时，返回到登录界面
+										startActivity(new Intent(mActivity,
+												LoginActivity.class));
+										mActivity.finish();
+									}
+								}).show();
 				break;
 			}
 		}

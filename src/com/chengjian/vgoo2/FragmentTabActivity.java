@@ -105,12 +105,12 @@ public class FragmentTabActivity extends FragmentActivity {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tag"));
 		}
 
-		// 初始化listview
-		final Resources res = getResources();
-		String[] mTitles = res.getStringArray(R.array.setting_items);
-		ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(this,
-				R.layout.fragment_setting_item, R.id.item, mTitles);
-		listView.setAdapter(mAdapter);
+//		// 初始化listview
+//		final Resources res = getResources();
+//		String[] mTitles = res.getStringArray(R.array.setting_items);
+//		ArrayAdapter<String> mAdapter = new ArrayAdapter<String>(this,
+//				R.layout.fragment_setting_item, R.id.item, mTitles);
+//		listView.setAdapter(mAdapter);
 	}
 
 //	// 点击按钮

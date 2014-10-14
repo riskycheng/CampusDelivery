@@ -2,13 +2,18 @@
 <resources>
 
     <!-- fragment setting -->
-    <string-array name="setting_items">
-        <item>用户信息</item>
-        <item>分享</item>
-        <item>意见反馈</item>
-        <item>版本更新</item>
-        <item>了解我们</item>
-        <item>退出</item>
+    <string-array name="deliveryCompanies">
+        <item>未知</item>
+        <item>顺丰快递</item>
+        <item>圆通快递</item>
+        <item>宅急送</item>
+        <item>申通快递</item>
+        <item>中通快递</item>
+        <item>天天快递</item>
+        <item>韵达快运</item>
+        <item>联邦快递</item>
+        <item>EMS</item>
+        <item>校园谷快递</item>
     </string-array>
 
     <!-- for the type of query -->

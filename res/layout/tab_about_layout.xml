@@ -52,10 +52,46 @@
             android:background="@color/light_grey" >
         </LinearLayout>
 
-        <!-- part 2 -->
+        <!-- 第二栏 -->
 
         <FrameLayout
-            android:id="@+id/setting_02_help"
+            android:id="@+id/setting_02_setSMS"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/setting_click_selector"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="170dp"
+                android:layout_height="50dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dip"
+                android:gravity="center_vertical"
+                android:paddingTop="6dip"
+                android:text="设置短信模板"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="30dip"
+                android:layout_height="30dip"
+                android:layout_gravity="right|center_vertical"
+                android:layout_marginRight="10dip"
+                android:background="@drawable/arrow_right"
+                android:gravity="center_vertical" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@color/light_grey" >
+        </LinearLayout>
+        
+        
+        <!-- part 3 -->
+
+        <FrameLayout
+            android:id="@+id/setting_03_help"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/setting_click_selector"
@@ -87,10 +123,10 @@
             android:background="@color/light_grey" >
         </LinearLayout>
 
-        <!-- 第三栏 -->
+        <!-- 第四栏 -->
 
         <FrameLayout
-            android:id="@+id/setting_03_signOut"
+            android:id="@+id/setting_04_signOut"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/setting_click_selector"

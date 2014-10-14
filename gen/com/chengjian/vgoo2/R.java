@@ -19,7 +19,7 @@ public final class R {
         public static final int QueryType=0x7f060001;
         /**  fragment setting 
          */
-        public static final int setting_items=0x7f060000;
+        public static final int deliveryCompanies=0x7f060000;
     }
     public static final class attr {
     }
@@ -155,23 +155,25 @@ public final class R {
         public static final int zhongtong=0x7f02004a;
     }
     public static final class id {
+        public static final int Btn_TabB_clear=0x7f0c0028;
+        public static final int Btn_clear=0x7f0c001f;
         public static final int Btn_queryTabA=0x7f0c001e;
-        public static final int Btn_queryTabB=0x7f0c0026;
-        public static final int Button_submit=0x7f0c0023;
+        public static final int Btn_queryTabB=0x7f0c0027;
+        public static final int Button_submit=0x7f0c0024;
         public static final int EditText_yundanhao=0x7f0c001d;
-        public static final int Edittext_queryNumber=0x7f0c0025;
-        public static final int ListView_all_Results=0x7f0c0027;
-        public static final int Spinner_queryType=0x7f0c0024;
+        public static final int Edittext_queryNumber=0x7f0c0026;
+        public static final int ListView_all_Results=0x7f0c0029;
+        public static final int Spinner_queryType=0x7f0c0025;
         public static final int company_spinner=0x7f0c000c;
         public static final int containertabcontent=0x7f0c0007;
         public static final int copyright=0x7f0c001c;
-        public static final int exit=0x7f0c0033;
-        public static final int help=0x7f0c0032;
+        public static final int exit=0x7f0c0036;
+        public static final int help=0x7f0c0035;
         public static final int icon=0x7f0c0000;
         public static final int in_store=0x7f0c0011;
         public static final int item=0x7f0c0003;
-        public static final int item_content=0x7f0c002c;
-        public static final int item_title=0x7f0c002b;
+        public static final int item_content=0x7f0c002e;
+        public static final int item_title=0x7f0c002d;
         public static final int linearLayout1=0x7f0c0008;
         public static final int list=0x7f0c0005;
         public static final int list1=0x7f0c0009;
@@ -186,27 +188,28 @@ public final class R {
         public static final int mail_no_edittext=0x7f0c0002;
         public static final int main=0x7f0c0006;
         public static final int manual_input=0x7f0c000f;
-        public static final int ok=0x7f0c0029;
+        public static final int ok=0x7f0c002b;
         public static final int password=0x7f0c001a;
         public static final int progressBar1=0x7f0c0017;
         public static final int receiver_mobilephone=0x7f0c000e;
         public static final int receiver_name=0x7f0c000d;
-        public static final int relativeLayout1=0x7f0c002a;
+        public static final int relativeLayout1=0x7f0c002c;
         public static final int replace=0x7f0c0010;
-        public static final int serialNumberStart=0x7f0c0028;
+        public static final int serialNumberStart=0x7f0c002a;
         public static final int setting=0x7f0c0004;
-        public static final int setting_01_setStartNum=0x7f0c002d;
-        public static final int setting_02_help=0x7f0c002e;
-        public static final int setting_03_signOut=0x7f0c002f;
-        public static final int startLinearLayout=0x7f0c0031;
-        public static final int tab_a_TextView_RecName=0x7f0c0020;
-        public static final int tab_a_TextView_Status=0x7f0c0021;
-        public static final int tab_a_TextView_Time=0x7f0c0022;
-        public static final int tab_a_TextView_deliveryName=0x7f0c001f;
+        public static final int setting_01_setStartNum=0x7f0c002f;
+        public static final int setting_02_setSMS=0x7f0c0030;
+        public static final int setting_03_help=0x7f0c0031;
+        public static final int setting_04_signOut=0x7f0c0032;
+        public static final int startLinearLayout=0x7f0c0034;
+        public static final int tab_a_TextView_RecName=0x7f0c0021;
+        public static final int tab_a_TextView_Status=0x7f0c0022;
+        public static final int tab_a_TextView_Time=0x7f0c0023;
+        public static final int tab_a_TextView_deliveryName=0x7f0c0020;
         public static final int textView=0x7f0c0018;
         public static final int title=0x7f0c0001;
         public static final int username=0x7f0c0019;
-        public static final int viewPager=0x7f0c0030;
+        public static final int viewPager=0x7f0c0033;
     }
     public static final class layout {
         public static final int all_tab_bottom_layout=0x7f030000;

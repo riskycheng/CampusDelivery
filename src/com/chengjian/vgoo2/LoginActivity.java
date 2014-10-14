@@ -213,7 +213,7 @@ public class LoginActivity extends Activity {
 				ConstantParams.isFromLoginActivity = true;
 				startActivity(intent);
 				finish();
-			}
+			}  
 			// }
 		}
 		super.onActivityResult(requestCode, resultCode, data);

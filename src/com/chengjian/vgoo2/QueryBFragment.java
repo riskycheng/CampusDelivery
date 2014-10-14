@@ -26,6 +26,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -40,6 +42,7 @@ public class QueryBFragment extends Fragment {
 	private EditText EditText_QueryNumber;
 	private ListView ListView_Query_AllResults;
 	private Button BtnQuery;
+	private Button BtnClear;
 	public static String inputValue;
 	public static SimpleAdapter simpleAdapter;
 
@@ -69,13 +72,35 @@ public class QueryBFragment extends Fragment {
 				.findViewById(R.id.ListView_all_Results);
 		BtnQuery = (Button) view.findViewById(R.id.Btn_queryTabB);
 		BtnQuery.setOnClickListener(new MyClickListener());
+		BtnClear = (Button) view.findViewById(R.id.Btn_TabB_clear);
+		BtnClear.setOnClickListener(new MyClickListener());
 		// 建立查询方式的数据源
 		String items[] = getResources().getStringArray(R.array.QueryType);
 		// 创建简单adpater
 		ArrayAdapter<String> QueryAdapter = new ArrayAdapter<String>(mActivity,
-				android.R.layout.simple_spinner_dropdown_item, items);
+				android.R.layout.simple_spinner_item, items);
+		QueryAdapter
+				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		// 绑定数据源
 		Spinner_QueryType.setAdapter(QueryAdapter);
+		Spinner_QueryType
+				.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+					@Override
+					public void onItemSelected(AdapterView<?> arg0, View arg1,
+							int position, long arg3) {
+						if (position == 0)
+							EditText_QueryNumber.setHint("输入手机号查询");
+						else
+							EditText_QueryNumber.setHint("输入运单号查询");
+					}
+
+					@Override
+					public void onNothingSelected(AdapterView<?> arg0) {
+						// TODO Auto-generated method stub
+						EditText_QueryNumber.setHint("输入手机号查询");
+					}
+				});
 	}
 
 	// 内部类：定义点击输入框动作
@@ -84,68 +109,36 @@ public class QueryBFragment extends Fragment {
 		@Override
 		public void onClick(View v) {
 			switch (v.getId()) {
-		/*	case R.id.Edittext_queryNumber:
-				LayoutInflater inflater = LayoutInflater.from(mActivity);
-				final View view = inflater.inflate(R.layout.edittext, null);
-				new AlertDialog.Builder(mActivity)
-						.setTitle("手动输入：")
-						.setView(view)
-						.setNegativeButton("取消", null)
-						.setPositiveButton("确定",
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-										EditText EditText_temp = (EditText) view
-												.findViewById(R.id.mail_no_edittext);
-										inputValue = EditText_temp.getText()
-												.toString().trim();
-										if (!inputValue.equals("")) {
-											if (isLetterOrDigit(inputValue)) {
-												EditText_QueryNumber
-														.setText(inputValue);
-												// 手动输入完毕直接查询快件
-												Intent intent = new Intent(
-														mActivity,
-														LoadingActivity.class);
-												intent.putExtra("loadingType",
-														"query");
-												intent.putExtra("methodName",
-														"ExecuteJson");
-												// 判断当前选择
-												int selection = Spinner_QueryType
-														.getSelectedItemPosition();
-												if (selection == 0)
-													// 手机号查询
-													intent.putExtra(
-															"SQL",
-															"select a.name,b.tihuo_time,b.rec_name,b.bill_status from 020_delivery a,020_way_bill b where a.fwz_id=1 and b.delivery_id=a.id and b.mobile=\""
-																	+ inputValue
-																	+ "\"");
-												else
-													// 运单号查询
-													intent.putExtra(
-															"SQL",
-															"select a.name,b.tihuo_time,b.rec_name,b.bill_status from 020_delivery a,020_way_bill b where a.fwz_id=1 and b.delivery_id=a.id and b.bill_number="
-																	+ inputValue);
-												startActivityForResult(intent,
-														1);
-
-											} else {
-												Toast.makeText(mActivity,
-														"运单号只能包含字母或数字，请重新输入！",
-														Toast.LENGTH_SHORT)
-														.show();
-											}
-										} else {
-											EditText_QueryNumber
-													.setText(inputValue);
-										}
-									}
-								}).show();
-
-				break;
-				*/
+			/*
+			 * case R.id.Edittext_queryNumber: LayoutInflater inflater =
+			 * LayoutInflater.from(mActivity); final View view =
+			 * inflater.inflate(R.layout.edittext, null); new
+			 * AlertDialog.Builder(mActivity) .setTitle("手动输入：") .setView(view)
+			 * .setNegativeButton("取消", null) .setPositiveButton("确定", new
+			 * DialogInterface.OnClickListener() {
+			 * 
+			 * @Override public void onClick(DialogInterface dialog, int which)
+			 * { EditText EditText_temp = (EditText) view
+			 * .findViewById(R.id.mail_no_edittext); inputValue =
+			 * EditText_temp.getText() .toString().trim(); if
+			 * (!inputValue.equals("")) { if (isLetterOrDigit(inputValue)) {
+			 * EditText_QueryNumber .setText(inputValue); // 手动输入完毕直接查询快件 Intent
+			 * intent = new Intent( mActivity, LoadingActivity.class);
+			 * intent.putExtra("loadingType", "query");
+			 * intent.putExtra("methodName", "ExecuteJson"); // 判断当前选择 int
+			 * selection = Spinner_QueryType .getSelectedItemPosition(); if
+			 * (selection == 0) // 手机号查询 intent.putExtra( "SQL",
+			 * "select a.name,b.tihuo_time,b.rec_name,b.bill_status from 020_delivery a,020_way_bill b where a.fwz_id=1 and b.delivery_id=a.id and b.mobile=\""
+			 * + inputValue + "\""); else // 运单号查询 intent.putExtra( "SQL",
+			 * "select a.name,b.tihuo_time,b.rec_name,b.bill_status from 020_delivery a,020_way_bill b where a.fwz_id=1 and b.delivery_id=a.id and b.bill_number="
+			 * + inputValue); startActivityForResult(intent, 1);
+			 * 
+			 * } else { Toast.makeText(mActivity, "运单号只能包含字母或数字，请重新输入！",
+			 * Toast.LENGTH_SHORT) .show(); } } else { EditText_QueryNumber
+			 * .setText(inputValue); } } }).show();
+			 * 
+			 * break;
+			 */
 			case R.id.Btn_queryTabB:
 
 				inputValue = EditText_QueryNumber.getText().toString().trim();
@@ -174,6 +167,9 @@ public class QueryBFragment extends Fragment {
 					Toast.makeText(mActivity, "运单号只能包含字母或数字，请重新输入！",
 							Toast.LENGTH_SHORT).show();
 				}
+				break;
+			case R.id.Btn_TabB_clear:
+				EditText_QueryNumber.setText("");
 				break;
 			}
 		}
