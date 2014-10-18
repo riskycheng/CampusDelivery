@@ -2,9 +2,12 @@ package com.chengjian.vgoo2;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.chengjian.utils.SQLiteHelper;
 import com.chengjian.vgoo2.R;
 import android.content.Context;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -91,6 +94,11 @@ public class FragmentTabActivity extends FragmentActivity {
 		mTabManager.addTab(mTabHost.newTabSpec("AboutTab")
 				.setIndicator(AboutTab), AboutTabFragment.class, null);
 		
+		//初始化 创建数据库
+		SQLiteDatabase database = this.openOrCreateDatabase("bill.db",
+				MODE_APPEND, null);// 创建数据库
+		final SQLiteHelper db = new SQLiteHelper(getApplicationContext());
+		db.getWritableDatabase();
 
 		mSettingLinearLayout = (LinearLayout) findViewById(R.id.setting);
 		mMainLinearLayout = (LinearLayout) findViewById(R.id.main);

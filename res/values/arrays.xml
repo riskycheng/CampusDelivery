@@ -4,16 +4,23 @@
     <!-- fragment setting -->
     <string-array name="deliveryCompanies">
         <item>未知</item>
-        <item>顺丰快递</item>
-        <item>圆通快递</item>
-        <item>宅急送</item>
         <item>申通快递</item>
+        <item>圆通速递</item>
         <item>中通快递</item>
+        <item>韵达快递</item>
+        <item>百世汇通</item>
         <item>天天快递</item>
-        <item>韵达快运</item>
+        <item>顺丰速运</item>
+        <item>中国邮政</item>
+        <item>全峰快递</item>
+        <item>优速快递</item>
+        <item>宅急送</item>
         <item>联邦快递</item>
+        <item>华强物流</item>
+        <item>中铁快运</item>
+        <item>国通快递</item>
+        <item>德邦物流</item>
         <item>EMS</item>
-        <item>校园谷快递</item>
     </string-array>
 
     <!-- for the type of query -->

@@ -64,10 +64,6 @@
                     android:layout_height="wrap_content"
                     android:text="物流公司："
                     android:textSize="18sp" />
-                <!--
-     				<EditText android:id="@+id/company_id" android:layout_width="200sp" android:layout_height="wrap_content"
-				    android:singleLine="true" android:editable="false" />
-                -->
 
                 <Spinner
                     android:id="@+id/company_spinner"
@@ -145,36 +141,34 @@
             android:textSize="22sp" />
     </RelativeLayout>
 
-    <!--
-     	<LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content" android:orientation="horizontal" 
-	    android:layout_gravity="center" android:paddingTop="10dip" android:paddingLeft="15dip" 
-	    android:paddingRight="15dip" android:paddingBottom="5dip" >
-		<Button
-		    android:id="@+id/replace"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:text="重  置"
-		    android:textColor="#000000"
-		    android:textSize="22sp"
-		    android:layout_alignParentRight="true"
-        	android:layout_centerVertical="true" />
-	</LinearLayout>
-    -->
 
     <LinearLayout
-        android:layout_marginTop="0dip"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginTop="0dip"
         android:orientation="horizontal"
         android:paddingLeft="15dip"
         android:paddingRight="15dip"
         android:paddingTop="5dip" >
 
         <Button
+            android:layout_marginRight="10dip"
+            android:id="@+id/in_store_add"
+            android:layout_width="fill_parent"
+            android:layout_height="50dip"
+            android:layout_weight="1"
+            android:background="@drawable/exit_button_click"
+            android:text="加 到 本 地"
+            android:textColor="#000000"
+            android:textSize="20sp" />
+
+        <Button
+            android:layout_marginLeft="10dip"
             android:id="@+id/in_store"
             android:layout_width="fill_parent"
             android:layout_height="50dip"
+            android:layout_weight="1"
             android:background="@drawable/exit_button_click"
             android:text="快 件 入 库"
             android:textColor="#000000"

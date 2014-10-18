@@ -15,9 +15,10 @@ import zhang.fan.vgoo2.idata.HadwareControll;
 import zhang.fan.vgoo2.idata.LoadingActivity;
 import zhang.fan.vgoo2.idata.LoadingIIActivity;
 
-import com.chengjian.utils.ConstantParams;
+import com.chengjian.entity.SavedBill;
+import com.chengjian.utils.ParsingTool;
+import com.chengjian.utils.SQLiteHelper;
 import com.chengjian.vgoo2.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -28,9 +29,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
@@ -43,49 +46,50 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemSelectedListener;
 
-/***
- * @author huangsm
- * @date 2013-1-4
- * @email huangsanm@gmail.com
- * @desc ËùÓĞĞÅÏ¢ÁĞ±í
- */
 public class HomeFragment extends Fragment {
 	private CornerListView mListView = null;
 	private EditText mailNo, receiverName, receiverMobilephone = null;
 	private Spinner companySpinner = null;
-	private Button manualInput, replace, inStore = null;
+	private Button manualInput, replace, inStore, inStoreAdd = null;
 	private String mailNoStr = null;
 	private Activity mActivity;
-	int adminId = 0;		//¹ÜÀíÔ±ID
-//	int serialNumber = 0;	//¿ì¼ş±àºÅ£¨ÕûĞÍ£©
-	String login_time = "";	//µ±ÌìµÇÂ¼Ê±¼ä
-	int instoreBills = 0;	//ÒÑÈë¿â¼ÆÊı
-//	String inStoreBillNo = "";	//¿ì¼şÈë¿â±àºÅ
-	
+	int adminId = 0; // ç®¡ç†å‘˜ID
+	// int serialNumber = 0; //å¿«ä»¶ç¼–å·ï¼ˆæ•´å‹ï¼‰
+	String login_time = ""; // å½“å¤©ç™»å½•æ—¶é—´
+	int instoreBills = 0; // å·²å…¥åº“è®¡æ•°
+	// String inStoreBillNo = ""; //å¿«ä»¶å…¥åº“ç¼–å·
+
 	public Handler mHandler = new MainHandler();
 	protected MediaPlayer mediaPlayer = null;
 	boolean press = true;
-	
+
 	SharedPreferences mySharedPreferences;
 	SharedPreferences.Editor editor;
-	
+
+	// å®šä¹‰æ•°æ®åº“è¯»å†™å¯¹è±¡
+	SQLiteHelper mysqHelper;
+
 	ArrayList<HashMap<String, String>> arrayList = null;
 	HashMap<String, String> map1, map2, map3, map4 = null;
 	private SimpleAdapter adapter = null;
 	String[] companyStr = null;
 	ArrayAdapter<String> companyAdapter = null;
-	int length = 0;
+	int length = 11;
 	int companyId = -1;
+	// ç”¨äºä¿å­˜å·²ç»æ·»åŠ åˆ°æœ¬åœ°çš„æ•°æ®ç»“æ„
+	public static ArrayList<SavedBill> savedBillsList = null;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-//		getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE);      //ÉèÖÃÎŞ±êÌâ
-//		getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);  //ÉèÖÃÈ«ÆÁ
-		HadwareControll.Open();		//´ò¿ªÉè±¸
+		// getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE); //è®¾ç½®æ— æ ‡é¢˜
+		// getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+		// WindowManager.LayoutParams.FLAG_FULLSCREEN); //è®¾ç½®å…¨å±
+		HadwareControll.Open(); // æ‰“å¼€è®¾å¤‡
 		HadwareControll.m_handler = mHandler;
 		mActivity = getActivity();
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -95,524 +99,616 @@ public class HomeFragment extends Fragment {
 		init(view);
 		return view;
 	}
-	
-	
-	public void init(View view){
-		
-		mailNo = (EditText)view.findViewById(R.id.mail_no);
-		companySpinner = (Spinner)view.findViewById(R.id.company_spinner);
-		receiverName = (EditText)view.findViewById(R.id.receiver_name);
-		receiverMobilephone = (EditText)view.findViewById(R.id.receiver_mobilephone);
-		manualInput = (Button)view.findViewById(R.id.manual_input);
-		replace = (Button)view.findViewById(R.id.replace);
-		inStore = (Button)view.findViewById(R.id.in_store);
-		
-		mySharedPreferences = mActivity.getSharedPreferences("myPreference",Activity.MODE_PRIVATE);
+
+	public void init(View view) {
+		mySharedPreferences = mActivity.getSharedPreferences("myPreference",
+				Activity.MODE_PRIVATE);
 		editor = mySharedPreferences.edit();
-		
-		adminId = mySharedPreferences.getInt("admin_id",0);
-		login_time = mySharedPreferences.getString("login_time","");
-		instoreBills = mySharedPreferences.getInt("instore_bills",0);
-		String prevInStoreBillNo = mySharedPreferences.getString("prev_instore_bill_no","");
-		String currentInStoreBillNo = mySharedPreferences.getString("current_instore_bill_no","");
+		// å®ä¾‹åŒ–SQliteHelperå¯¹è±¡
+		mysqHelper = new SQLiteHelper(mActivity);
+		savedBillsList = new ArrayList<SavedBill>();
+		mailNo = (EditText) view.findViewById(R.id.mail_no);
+		companySpinner = (Spinner) view.findViewById(R.id.company_spinner);
+		receiverName = (EditText) view.findViewById(R.id.receiver_name);
+		receiverMobilephone = (EditText) view
+				.findViewById(R.id.receiver_mobilephone);
+		manualInput = (Button) view.findViewById(R.id.manual_input);
+		replace = (Button) view.findViewById(R.id.replace);
+		inStore = (Button) view.findViewById(R.id.in_store);
+
+		inStoreAdd = (Button) view.findViewById(R.id.in_store_add);
+		// åŠ å…¥åˆ°æœ¬åœ°
+		inStoreAdd.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// è·å–
+				String s1 = mailNoStr;
+				String s2 = receiverName.getText().toString().trim();
+				String s3 = String.valueOf(companyId);
+				String s4 = receiverMobilephone.getText().toString().trim();
+				String s5 = String.valueOf(adminId);
+				String s6 = mySharedPreferences.getString(
+						"current_instore_bill_no", "");
+				// å°è£…ä¸ºSavedBill
+				SavedBill savebill = ParsingTool.Parsing2SavedBill(s1, s2, s3,
+						s4, s5, s6);
+				// åŠ å…¥å‘é‡
+				// savedBillsList.add(savebill);
+				// åŠ å…¥åˆ°æ•°æ®åº“
+				long tempRes = mysqHelper.insertBillData(savebill);
+				if (tempRes == -1) {
+					Toast.makeText(mActivity, "ä¿å­˜å¤±è´¥ï¼šé‡å¤æ’å…¥ï¼", Toast.LENGTH_SHORT)
+							.show();
+				} else {
+					Toast.makeText(mActivity, "ä¿å­˜æˆåŠŸï¼", Toast.LENGTH_SHORT)
+							.show();
+				}
+				// Log.e("listsLength:", savedBillsList.size() + "");
+			}
+		});
+
+		adminId = mySharedPreferences.getInt("admin_id", 0);
+		login_time = mySharedPreferences.getString("login_time", "");
+		instoreBills = mySharedPreferences.getInt("instore_bills", 0);
+		String prevInStoreBillNo = mySharedPreferences.getString(
+				"prev_instore_bill_no", "");
+		String currentInStoreBillNo = mySharedPreferences.getString(
+				"current_instore_bill_no", "");
 
 		arrayList = new ArrayList<HashMap<String, String>>();
 		map1 = new HashMap<String, String>();
 		map2 = new HashMap<String, String>();
 		map3 = new HashMap<String, String>();
 		map4 = new HashMap<String, String>();
-		
-		map1.put("item", "µÇÂ¼Ê±¼ä");
+
+		map1.put("item", "ç™»å½•æ—¶é—´");
 		map1.put("item_content", login_time);
-		map2.put("item", "ÒÑÈë¿â");
-		map2.put("item_content", instoreBills + " ¼ş");
-		map3.put("item", "ÉÏÒ»´ÎÈë¿â±àºÅ");
+		map2.put("item", "å·²å…¥åº“");
+		map2.put("item_content", instoreBills + " ä»¶");
+		map3.put("item", "ä¸Šä¸€æ¬¡å…¥åº“ç¼–å·");
 		map3.put("item_content", prevInStoreBillNo);
-		map4.put("item", "µ±Ç°Èë¿â±àºÅ");
+		map4.put("item", "å½“å‰å…¥åº“ç¼–å·");
 		map4.put("item_content", currentInStoreBillNo);
 
 		arrayList.add(map1);
 		arrayList.add(map2);
 		arrayList.add(map3);
 		arrayList.add(map4);
-		
+
 		adapter = new SimpleAdapter(mActivity, arrayList,
-				R.layout.simple_list_item_1, new String[] {"item", "item_content"},
-				new int[] { R.id.item_title, R.id.item_content });
-		mListView = (CornerListView)view.findViewById(R.id.list1);
+				R.layout.simple_list_item_1, new String[] { "item",
+						"item_content" }, new int[] { R.id.item_title,
+						R.id.item_content });
+		mListView = (CornerListView) view.findViewById(R.id.list1);
 		mListView.setAdapter(adapter);
-	/*	
-		if(ConstantParams.isFromLoginActivity || ConstantParams.isFromSplashActivity) {	//´ÓµÇÂ¼½çÃæ£¬»òÕß´ÓSplashActivityÌø×ª¹ıÀ´µÄ
-			ConstantParams.isFromLoginActivity = false;
-			ConstantParams.isFromSplashActivity = false;
-			Intent intent2 = new Intent(mActivity, LoadingActivity.class);
-			intent2.putExtra("loadingType", "refresh_spinner");
-			intent2.putExtra("methodName", "ExecuteJson");
-			//¸ù¾İ¹ÜÀíÔ±ID»ñÈ¡ÎïÁ÷¹«Ë¾ÁĞ±í
-			intent2.putExtra("SQL", "SELECT name, fwz_delivery_id FROM 020_delivery a, 020_admin b WHERE a.fwz_id=b.fwz_id and b.id=" + adminId);
-			startActivityForResult(intent2, 5);
-		}
-	*/	
+		/*
+		 * if(ConstantParams.isFromLoginActivity ||
+		 * ConstantParams.isFromSplashActivity) { //ä»ç™»å½•ç•Œé¢ï¼Œæˆ–è€…ä»SplashActivityè·³è½¬è¿‡æ¥çš„
+		 * ConstantParams.isFromLoginActivity = false;
+		 * ConstantParams.isFromSplashActivity = false; Intent intent2 = new
+		 * Intent(mActivity, LoadingActivity.class);
+		 * intent2.putExtra("loadingType", "refresh_spinner");
+		 * intent2.putExtra("methodName", "ExecuteJson"); //æ ¹æ®ç®¡ç†å‘˜IDè·å–ç‰©æµå…¬å¸åˆ—è¡¨
+		 * intent2.putExtra("SQL",
+		 * "SELECT name, fwz_delivery_id FROM 020_delivery a, 020_admin b WHERE a.fwz_id=b.fwz_id and b.id="
+		 * + adminId); startActivityForResult(intent2, 5); }
+		 */
 		companyStr = getResources().getStringArray(R.array.deliveryCompanies);
-		companyAdapter = new ArrayAdapter<String>(mActivity, android.R.layout.simple_spinner_item, companyStr);
-    	companyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-    	companySpinner.setAdapter(companyAdapter);
-    	companySpinner.setSelection(0);
-		
-		companySpinner.setOnItemSelectedListener(new OnItemSelectedListener(){
+		companyAdapter = new ArrayAdapter<String>(mActivity,
+				android.R.layout.simple_spinner_item, companyStr);
+		companyAdapter
+				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		companySpinner.setAdapter(companyAdapter);
+		companySpinner.setSelection(0);
+
+		companySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
-			public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+			public void onItemSelected(AdapterView<?> arg0, View arg1,
+					int arg2, long arg3) {
 				String companyManuSelect = companyAdapter.getItem(arg2).trim();
-				if(companyManuSelect.equals("Î´Öª")) {
+				if (companyManuSelect.equals("æœªçŸ¥")) {
 					companyId = -1;
-				}
-				else if(companyManuSelect.equals("Ğ£Ô°¹È¿ìµİ")) {
+				} else if (companyManuSelect.equals("æ ¡å›­è°·å¿«é€’")) {
 					companyId = 0;
-				}
-				else if(companyManuSelect.equals("EMS")) {
+				} else if (companyManuSelect.equals("ç”³é€šå¿«é€’")) {
+					companyId = 100;
+				} else if (companyManuSelect.equals("åœ†é€šé€Ÿé€’")) {
+					companyId = 101;
+				} else if (companyManuSelect.equals("ä¸­é€šå¿«é€’")) {
+					companyId = 500;
+				} else if (companyManuSelect.equals("éŸµè¾¾å¿«é€’")) {
+					companyId = 102;
+				} else if (companyManuSelect.equals("ç™¾ä¸–æ±‡é€š")) {
+					companyId = 502;
+				} else if (companyManuSelect.equals("å¤©å¤©å¿«é€’")) {
+					companyId = 504;
+				} else if (companyManuSelect.equals("é¡ºä¸°é€Ÿè¿")) {
+					companyId = 505;
+				} else if (companyManuSelect.equals("ä¸­å›½é‚®æ”¿")) {
+					companyId = 1;
+				} else if (companyManuSelect.equals("å…¨å³°å¿«é€’")) {
+					companyId = 1216;
+				} else if (companyManuSelect.equals("ä¼˜é€Ÿå¿«é€’")) {
+					companyId = 1207;
+				} else if (companyManuSelect.equals("å®…æ€¥é€")) {
+					companyId = 103;
+				} else if (companyManuSelect.equals("è”é‚¦å¿«é€’")) {
+					companyId = 106;
+				} else if (companyManuSelect.equals("åå¼ºç‰©æµ")) {
+					companyId = 108;
+				} else if (companyManuSelect.equals("ä¸­é“å¿«è¿")) {
+					companyId = 1016;
+				} else if (companyManuSelect.equals("å›½é€šå¿«é€’")) {
+					companyId = 200143;
+				} else if (companyManuSelect.equals("å¾·é‚¦ç‰©æµ")) {
+					companyId = 107;
+				} else if (companyManuSelect.equals("EMS")) {
 					companyId = 2;
 				}
-				else if(companyManuSelect.equals("ÉêÍ¨¿ìµİ")) {
-					companyId = 100;
-				}
-				else if(companyManuSelect.equals("Ô²Í¨¿ìµİ")) {
-					companyId = 101;
-				}
-				else if(companyManuSelect.equals("ÔÏ´ï¿ìÔË")) {
-					companyId = 102;
-				}
-				else if(companyManuSelect.equals("Õ¬¼±ËÍ")) {
-					companyId = 103;
-				}
-				else if(companyManuSelect.equals("Áª°î¿ìµİ")) {
-					companyId = 106;
-				}
-				else if(companyManuSelect.equals("ÖĞÍ¨ËÙµİ")) {
-					companyId = 500;
-				}
-				else if(companyManuSelect.equals("ÌìÌì¿ìµİ")) {
-					companyId = 504;
-				}
-				else if(companyManuSelect.equals("Ë³·á¿ìµİ")) {
-					companyId = 505;
-				}
-	            if(companyId != -1) {
+				if (companyId != -1) {
 					editor.putInt("prev_company_id", companyId);
 					editor.commit();
-	            }
+				}
 			}
 
 			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {}
+			public void onNothingSelected(AdapterView<?> arg0) {
+			}
 		});
-		
-		//V2.1ĞÂÔö¹¦ÄÜ£ºÈë¿âºÍenter¼üµÄ°ó¶¨£¬ÊÖ¶¯ÊäÈëÍêÊÖ»úºÅºó£¬°´Enter¼üÖ±½ÓÈë¿â
+
+		// V2.1æ–°å¢åŠŸèƒ½ï¼šå…¥åº“å’Œenteré”®çš„ç»‘å®šï¼Œæ‰‹åŠ¨è¾“å…¥å®Œæ‰‹æœºå·åï¼ŒæŒ‰Enteré”®ç›´æ¥å…¥åº“
 		receiverMobilephone.setOnKeyListener(new OnKeyListener() {
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				if(keyCode == KeyEvent.KEYCODE_ENTER) {
-					billInStore();	//¿ì¼şÈë¿â
+				if (keyCode == KeyEvent.KEYCODE_ENTER) {
+					billInStore(); // å¿«ä»¶å…¥åº“
 					return true;
 				}
 				return false;
 			}
 		});
-		
+
 		manualInput.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				LayoutInflater inflater = (LayoutInflater)mActivity.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);   
-			    final View view = inflater.inflate(R.layout.edittext, null);
+				LayoutInflater inflater = (LayoutInflater) mActivity
+						.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+				final View view = inflater.inflate(R.layout.edittext, null);
 				new AlertDialog.Builder(mActivity)
-								.setTitle("ÊÖ¶¯ÊäÈëÔËµ¥ºÅ£º")
-								.setView(view)
-								.setNegativeButton("È¡Ïû", null)
-								.setPositiveButton("È·¶¨", new DialogInterface.OnClickListener(){
+						.setTitle("æ‰‹åŠ¨è¾“å…¥è¿å•å·ï¼š")
+						.setView(view)
+						.setNegativeButton("å–æ¶ˆ", null)
+						.setPositiveButton("ç¡®å®š",
+								new DialogInterface.OnClickListener() {
 									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										EditText mailNoEditText = (EditText) view.findViewById(R.id.mail_no_edittext);
-										mailNoStr = mailNoEditText.getText().toString().trim();
-										if(!mailNoStr.equals("")) {
-											if(isLetterOrDigit(mailNoStr)) {
+									public void onClick(DialogInterface dialog,
+											int which) {
+										EditText mailNoEditText = (EditText) view
+												.findViewById(R.id.mail_no_edittext);
+										mailNoStr = mailNoEditText.getText()
+												.toString().trim();
+										if (!mailNoStr.equals("")) {
+											if (isLetterOrDigit(mailNoStr)) {
 												mailNo.setText(mailNoStr);
-												//ÊÖ¶¯ÊäÈëÍê±ÏÖ±½Ó²éÑ¯¿ì¼ş
-												Intent intent = new Intent(mActivity, LoadingIIActivity.class);
-												intent.putExtra("mailNo", mailNoStr);
-												startActivityForResult(intent, 2);
+												// æ‰‹åŠ¨è¾“å…¥å®Œæ¯•ç›´æ¥æŸ¥è¯¢å¿«ä»¶
+												Intent intent = new Intent(
+														mActivity,
+														LoadingIIActivity.class);
+												intent.putExtra("mailNo",
+														mailNoStr);
+												startActivityForResult(intent,
+														2);
+											} else {
+												Toast.makeText(mActivity,
+														"è¿å•å·åªèƒ½åŒ…å«å­—æ¯æˆ–æ•°å­—ï¼Œè¯·é‡æ–°è¾“å…¥ï¼",
+														Toast.LENGTH_SHORT)
+														.show();
 											}
-											else {
-												Toast.makeText(mActivity,"ÔËµ¥ºÅÖ»ÄÜ°üº¬×ÖÄ¸»òÊı×Ö£¬ÇëÖØĞÂÊäÈë£¡",Toast.LENGTH_SHORT).show();
-											}
-										}
-										else {
+										} else {
 											mailNo.setText(mailNoStr);
 										}
 									}
-								})
-								.show();
+								}).show();
 			}
 		});
-		
+
 		replace.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
 				mailNo.setText("");
-				companySpinner.setSelection(length);
+				companySpinner.setSelection(0);
 				companyId = -1;
 				receiverName.setText("");
 				receiverMobilephone.setText("");
 			}
 		});
-		
+
 		inStore.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				billInStore();	//¿ì¼şÈë¿â
+				billInStore(); // å¿«ä»¶å…¥åº“
+			}
+		});
+		
+		
+		inStoreAdd.setOnLongClickListener(new OnLongClickListener() {
+			
+			@Override
+			public boolean onLongClick(View v) {
+				
+				savedBillsList = mysqHelper.queryAllBills();
+				Toast.makeText(mActivity, savedBillsList.size()+"", Toast.LENGTH_SHORT).show();
+				
+				return true;
 			}
 		});
 	}
-		
-	
-	
 
-private void billInStore() {
-	String receiverNameStr = receiverName.getText().toString().trim();
-	String receiverMobilephoneStr = receiverMobilephone.getText().toString().trim();
-	if(mailNo.equals("") || receiverNameStr.equals("") || receiverMobilephoneStr.equals("")) {
-		Toast.makeText(mActivity, "ÇëÌîĞ´ÍêÕûµÄÔËµ¥ĞÅÏ¢£¡", Toast.LENGTH_SHORT).show();
-	}
-	else if(companyId == -1) {
-		Toast.makeText(mActivity, "ÎŞĞ§ÎïÁ÷¹«Ë¾£¬ÇëÊÖ¶¯Ñ¡Ôñ£¡", Toast.LENGTH_SHORT).show();
-	}
-	else if(!receiverMobilephoneStr.substring(0, 1).equals("1") || receiverMobilephoneStr.length() != 11) {
-		Toast.makeText(mActivity, "ÇëÊäÈëÕıÈ·µÄÊÖ»úºÅÂë£¡", Toast.LENGTH_SHORT).show();
-	}
-	else {					
-		//»ñÈ¡µ±Ç°Èë¿â±àºÅ
-		String currentInStoreBillNo = mySharedPreferences.getString("current_instore_bill_no","");
-		
-		Intent intent = new Intent(mActivity, LoadingActivity.class);
-		intent.putExtra("loadingType", "instore");
-		intent.putExtra("methodName", "savebill");
-		intent.putExtra("s1", mailNoStr);
-		intent.putExtra("s2", receiverNameStr);
-		intent.putExtra("s3", companyId + "");
-		intent.putExtra("s4", receiverMobilephoneStr);
-		intent.putExtra("s5", adminId + "");
-		intent.putExtra("s6", currentInStoreBillNo);
-		startActivityForResult(intent, 1);
-	}
-}
+	private void billInStore() {
+		String receiverNameStr = receiverName.getText().toString().trim();
+		String receiverMobilephoneStr = receiverMobilephone.getText()
+				.toString().trim();
+		if (mailNo.equals("") || receiverNameStr.equals("")
+				|| receiverMobilephoneStr.equals("")) {
+			Toast.makeText(mActivity, "è¯·å¡«å†™å®Œæ•´çš„è¿å•ä¿¡æ¯ï¼", Toast.LENGTH_SHORT).show();
+		} else if (companyId == -1) {
+			Toast.makeText(mActivity, "æ— æ•ˆç‰©æµå…¬å¸ï¼Œè¯·æ‰‹åŠ¨é€‰æ‹©ï¼", Toast.LENGTH_SHORT)
+					.show();
+		} else if (!receiverMobilephoneStr.substring(0, 1).equals("1")
+				|| receiverMobilephoneStr.length() != 11) {
+			Toast.makeText(mActivity, "è¯·è¾“å…¥æ­£ç¡®çš„æ‰‹æœºå·ç ï¼", Toast.LENGTH_SHORT).show();
+		} else {
+			// è·å–å½“å‰å…¥åº“ç¼–å·
+			String currentInStoreBillNo = mySharedPreferences.getString(
+					"current_instore_bill_no", "");
 
+			Intent intent = new Intent(mActivity, LoadingActivity.class);
+			intent.putExtra("loadingType", "instore");
+			intent.putExtra("methodName", "savebill");
+			intent.putExtra("s1", mailNoStr);
+			intent.putExtra("s2", receiverNameStr);
+			intent.putExtra("s3", companyId + "");
+			intent.putExtra("s4", receiverMobilephoneStr);
+			intent.putExtra("s5", adminId + "");
+			intent.putExtra("s6", currentInStoreBillNo);
+			startActivityForResult(intent, 1);
+		}
+	}
 
-@Override
-public void onActivityResult(int requestCode, int resultCode, Intent data) {
-	if(requestCode == 1) {	//Èë¿â²Ù×÷
-		if(resultCode == Activity.RESULT_OK) {
-			final String result = data.getStringExtra("Result");	//½ÓÊÕIntent´«µİ¹ıÀ´µÄ²éÑ¯½á¹û
-			if(result.equals("²éÑ¯Ê§°Ü") || result.equals("²éÑ¯Îª¿Õ")) {
-				new AlertDialog.Builder(mActivity)
-								.setTitle("Èë¿â²Ù×÷Ê§°Ü")
-								.setMessage("µ±Ç°ÍøÂç²»¸øÁ¦£¬Èë¿â²Ù×÷Ê§°Ü£¬ÇëÉÔºóÖØÊÔ¡£")
-								.setNeutralButton("È·¶¨", null)
-								.show();
-			}
-			else if(result.equals("Èë¿âÊ§°Ü")) {
-				new AlertDialog.Builder(mActivity)
-								.setTitle("Èë¿âÊ§°Ü")
-								.setMessage("Èë¿âÊ§°Ü£¬»òµ±Ç°µ¥ºÅÒÑ¾­Èë¿â£¬ÇëºË¶Ôµ¥ºÅºóÖØÊÔ¡£")
-								.setNeutralButton("È·¶¨", null)
-								.show();
-			}
-			else {
-				Toast.makeText(mActivity, mailNoStr + " Èë¿â³É¹¦£¡", Toast.LENGTH_SHORT).show();
-				new Thread() {
-					@Override
-					public void run() {
-						try {
-							URL url = new URL("http://www.v-goo.com/syn_fwz.php?act=syn_send&bill_id=" + result);
-							HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-							conn.setRequestProperty("accept", "*/*");
-							conn.setRequestProperty("connection", "Kepp-Alive");
-							conn.setRequestProperty("user-agent", "Mozilla/4.0(compatible; MSIE 6.0; Windows NT 5.1; SV1)");
-							conn.connect();
-//							BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//							String line = "";
-//							String httpResult = "";
-//							while((line = bufferedReader.readLine()) != null) {
-//								httpResult += line;
-//							}
-//							handler.sendEmptyMessage(2);
-						} catch (Exception e) {
-							e.printStackTrace();
-							Toast.makeText(mActivity, "HTTP·ÃÎÊÒì³££¡", Toast.LENGTH_SHORT).show();
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == 1) { // å…¥åº“æ“ä½œ
+			if (resultCode == Activity.RESULT_OK) {
+				final String result = data.getStringExtra("Result"); // æ¥æ”¶Intentä¼ é€’è¿‡æ¥çš„æŸ¥è¯¢ç»“æœ
+
+				if (result.equals("æŸ¥è¯¢å¤±è´¥") || result.equals("æŸ¥è¯¢ä¸ºç©º")) {
+					new AlertDialog.Builder(mActivity).setTitle("å…¥åº“æ“ä½œå¤±è´¥")
+							.setMessage("å½“å‰ç½‘ç»œä¸ç»™åŠ›ï¼Œå…¥åº“æ“ä½œå¤±è´¥ï¼Œè¯·ç¨åé‡è¯•ã€‚")
+							.setNeutralButton("ç¡®å®š", null).show();
+				} else if (result.equals("å…¥åº“å¤±è´¥")) {
+					new AlertDialog.Builder(mActivity).setTitle("å…¥åº“å¤±è´¥")
+							.setMessage("å…¥åº“å¤±è´¥ï¼Œæˆ–å½“å‰å•å·å·²ç»å…¥åº“ï¼Œè¯·æ ¸å¯¹å•å·åé‡è¯•ã€‚")
+							.setNeutralButton("ç¡®å®š", null).show();
+				} else {
+					Toast.makeText(mActivity, mailNoStr + " å…¥åº“æˆåŠŸï¼",
+							Toast.LENGTH_SHORT).show();
+
+					// å…¥åº“æˆåŠŸåè°ƒç”¨URL
+					new Thread() {
+						@Override
+						public void run() {
+							try {
+								URL url = new URL(
+										"http://e-zhaosheng.com/vgoo/syn_fwz.php?act=syn_fwz&bill_id="
+												+ result);
+								HttpURLConnection conn = (HttpURLConnection) url
+										.openConnection();
+								conn.setRequestProperty("accept", "*/*");
+								conn.setRequestProperty("connection",
+										"Kepp-Alive");
+								conn.setRequestProperty("user-agent",
+										"Mozilla/4.0(compatible; MSIE 6.0; Windows NT 5.1; SV1)");
+								conn.connect();
+								// BufferedReader bufferedReader = new
+								// BufferedReader(new
+								// InputStreamReader(conn.getInputStream()));
+								// String line = "";
+								// String httpResult = "";
+								// while((line = bufferedReader.readLine()) !=
+								// null) {
+								// httpResult += line;
+								// }
+								// handler.sendEmptyMessage(2);
+							} catch (Exception e) {
+								e.printStackTrace();
+								Toast.makeText(mActivity, "HTTPè®¿é—®å¼‚å¸¸ï¼",
+										Toast.LENGTH_SHORT).show();
+							}
+							// finally {
+							// try {
+							// bufferedReader.close();
+							// } catch (IOException e) {
+							// e.printStackTrace();
+							// }
+							// }
 						}
-//						finally {
-//							try {
-//								bufferedReader.close();
-//							} catch (IOException e) {
-//								e.printStackTrace();
-//							}
-//						}
-					}
-				}.start();
-				
-				String prevInstoreBillNo = mySharedPreferences.getString("current_instore_bill_no","");
-				int serialNumber = mySharedPreferences.getInt("serial_number", 1);
-				
-				arrayList.clear();
-				map1.put("item", "µÇÂ¼Ê±¼ä");
-				map1.put("item_content", login_time);
-				instoreBills++;
-				map2.put("item", "ÒÑÈë¿â");
-				map2.put("item_content", instoreBills + " ¼ş");
-				map3.put("item", "ÉÏÒ»´ÎÈë¿â±àºÅ");
-				map3.put("item_content", prevInstoreBillNo);
-				
-				serialNumber++;
-				String currentInStoreBillNo = "";
-				currentInStoreBillNo = prevInstoreBillNo.substring(0, 9) + serialNumber;
-				map4.put("item", "µ±Ç°Èë¿â±àºÅ");
-				map4.put("item_content", currentInStoreBillNo);
+					}.start();
 
-				arrayList.add(map1);
-				arrayList.add(map2);
-				arrayList.add(map3);
-				arrayList.add(map4);
-				adapter.notifyDataSetChanged();
-				
-				editor.putInt("serial_number", serialNumber);	//±£´æ
-				editor.putInt("instore_bills", instoreBills);
-				editor.putString("prev_instore_bill_no", prevInstoreBillNo);
-				editor.putString("current_instore_bill_no", currentInStoreBillNo);
-				editor.commit();
-				
-				mailNo.setText("");
-				companySpinner.setSelection(length);
-				companyId = -1;
-				receiverName.setText("");
-				receiverMobilephone.setText("");
-			}
-		}
-	}
-	else if(requestCode == 2) {	//¿ì¼ş²éÑ¯
-		if(resultCode == Activity.RESULT_OK) {
-			mailNo.setText(mailNoStr);
-			String httpResult = data.getStringExtra("Result");	//½ÓÊÕIntent´«µİ¹ıÀ´µÄ²éÑ¯½á¹û
-		    try {
-		        JSONObject result = new JSONObject(httpResult);		//×ª»»ÎªJSONObject
-		        companyId = result.getInt("companyId");
-		        String receiverNameStr = result.getString("recName");
-		        String receiverMobilephoneStr = result.getString("mobile");
-		            
-		        if(companyId == -1) {	//»ñÈ¡ÉÏÒ»´ÎµÄ¿ìµİ¹«Ë¾
-		          	companyId = mySharedPreferences.getInt("prev_company_id", -1);
-		        }
-		        else {
-					editor.putInt("prev_company_id", companyId);
+					String prevInstoreBillNo = mySharedPreferences.getString(
+							"current_instore_bill_no", "");
+					int serialNumber = mySharedPreferences.getInt(
+							"serial_number", 1);
+
+					arrayList.clear();
+					map1.put("item", "ç™»å½•æ—¶é—´");
+					map1.put("item_content", login_time);
+					instoreBills++;
+					map2.put("item", "å·²å…¥åº“");
+					map2.put("item_content", instoreBills + " ä»¶");
+					map3.put("item", "ä¸Šä¸€æ¬¡å…¥åº“ç¼–å·");
+					map3.put("item_content", prevInstoreBillNo);
+
+					serialNumber++;
+					String currentInStoreBillNo = "";
+					currentInStoreBillNo = prevInstoreBillNo.substring(0, 9)
+							+ serialNumber;
+					map4.put("item", "å½“å‰å…¥åº“ç¼–å·");
+					map4.put("item_content", currentInStoreBillNo);
+
+					arrayList.add(map1);
+					arrayList.add(map2);
+					arrayList.add(map3);
+					arrayList.add(map4);
+					adapter.notifyDataSetChanged();
+
+					editor.putInt("serial_number", serialNumber); // ä¿å­˜
+					editor.putInt("instore_bills", instoreBills);
+					editor.putString("prev_instore_bill_no", prevInstoreBillNo);
+					editor.putString("current_instore_bill_no",
+							currentInStoreBillNo);
 					editor.commit();
-		        }
-		        receiverName.setText(receiverNameStr);
-		        receiverMobilephone.setText(receiverMobilephoneStr);
-		        Toast.makeText(mActivity, "¿ì¼ş²éÑ¯³É¹¦", Toast.LENGTH_SHORT).show();
-		    } catch (JSONException e) {	//¿ì¼ş²éÑ¯Òì³£
-		        Toast.makeText(mActivity, "¿ì¼ş²»´æÔÚ", Toast.LENGTH_SHORT).show();
-				companyId = mySharedPreferences.getInt("prev_company_id", -1);	//»ñÈ¡ÉÏÒ»´ÎµÄ¿ìµİ¹«Ë¾
-		        receiverName.setText("0");
-		        receiverMobilephone.setText("");
-		    }
-		    
-			String companyStr2 = "";
-            switch(companyId) {
-            	case -1: companyStr2 = "Î´Öª"; break;
-            	case 0: companyStr2 = "Ğ£Ô°¹È¿ìµİ"; break;
-            	case 2: companyStr2 = "EMS"; break;
-            	case 100: companyStr2 = "ÉêÍ¨¿ìµİ"; break;
-            	case 101: companyStr2 = "Ô²Í¨¿ìµİ"; break;
-            	case 102: companyStr2 = "ÔÏ´ï¿ìÔË"; break;
-            	case 103: companyStr2 = "Õ¬¼±ËÍ"; break;
-            	case 106: companyStr2 = "Áª°î¿ìµİ"; break;
-            	case 500: companyStr2 = "ÖĞÍ¨ËÙµİ"; break;
-            	case 504: companyStr2 = "ÌìÌì¿ìµİ"; break;
-            	case 505: companyStr2 = "Ë³·á¿ìµİ"; break;
-            	default: break;
-            }
-            for(int i=0; i<length; i++) {
-            	if(companyStr[i].equals(companyStr2)) {
-            		companySpinner.setSelection(i);
-            	}
-            }
-            receiverMobilephone.requestFocus();		//»ñÈ¡½¹µã
-            receiverMobilephone.setSelection(receiverMobilephone.getText().toString().length());	//ÉèÖÃ¹â±êÎ»ÖÃ
-		}
-	}
-	else if(requestCode == 3) {	//ÉèÖÃÆğÊ¼±àºÅ
-		int serialNumber = mySharedPreferences.getInt("serial_number_start", 0);
-		arrayList.clear();
-		map1.put("item", "µÇÂ¼Ê±¼ä");
-		map1.put("item_content", login_time);
-		map2.put("item", "ÒÑÈë¿â");
-		map2.put("item_content", instoreBills + " ¼ş");
-		String prevInstoreBillNo = mySharedPreferences.getString("prev_instore_bill_no","");
-		map3.put("item", "ÉÏÒ»´ÎÈë¿â±àºÅ");
-		map3.put("item_content", prevInstoreBillNo);
-		String currentInStoreBillNo = "";
-		//Éú³ÉÈë¿â±àºÅ£¬20140601-001£¬ÅÅ³ıÒÔ¡°xyg¡±¿ªÍ·µÄ±àºÅ
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");   //»ñÈ¡µ±Ç°Ê±¼ä
-        String datePre = simpleDateFormat.format(new java.util.Date());
-        currentInStoreBillNo = datePre + "-" + serialNumber;
-		map4.put("item", "µ±Ç°Èë¿â±àºÅ");
-		map4.put("item_content", currentInStoreBillNo);
 
-		arrayList.add(map1);
-		arrayList.add(map2);
-		arrayList.add(map3);
-		arrayList.add(map4);
-		adapter.notifyDataSetChanged();
-		
-		editor.putInt("serial_number", serialNumber);	//±£´æ
-		editor.putString("current_instore_bill_no", currentInStoreBillNo);
-		editor.commit();
-	}
-	else if(requestCode == 5) {	//²éÑ¯ÎïÁ÷¹«Ë¾ÁĞ±í
-		if(resultCode == Activity.RESULT_OK) {
-			String result = data.getStringExtra("Result");	//½ÓÊÕIntent´«µİ¹ıÀ´µÄ²éÑ¯½á¹û
-			if(result.equals("²éÑ¯Ê§°Ü") || result.equals("²éÑ¯Îª¿Õ")) {
-				new AlertDialog.Builder(mActivity)
-								.setTitle("Ê§°Ü")
-								.setMessage("µ±Ç°ÍøÂç²»¸øÁ¦£¬²éÑ¯ÎïÁ÷¹«Ë¾ÁĞ±íÊ§°Ü£¬ÇëÉÔºóÖØÊÔ¡£")
-								.setNeutralButton("È·¶¨", null)
-								.show();
+					mailNo.setText("");
+					companySpinner.setSelection(length);
+					companyId = -1;
+					receiverName.setText("");
+					receiverMobilephone.setText("");
+				}
 			}
-			else {
-				Toast.makeText(mActivity, "²éÑ¯ÎïÁ÷¹«Ë¾ÁĞ±í³É¹¦£¡", Toast.LENGTH_SHORT).show();
+		} else if (requestCode == 2) { // å¿«ä»¶æŸ¥è¯¢
+			if (resultCode == Activity.RESULT_OK) {
+				mailNo.setText(mailNoStr);
+				String httpResult = data.getStringExtra("Result"); // æ¥æ”¶Intentä¼ é€’è¿‡æ¥çš„æŸ¥è¯¢ç»“æœ
+				Log.e("Homeï¼šå¿«ä»¶æŸ¥è¯¢ï¼š", httpResult);
 				try {
-		            JSONArray jsonArray = new JSONArray(result);
-		            length = jsonArray.length();
-		            if(length > 0) {
-		            	companyStr = new String[length+1];
-		            	for(int i=0; i<length; i++) {
-			            	JSONObject jsonObj = (JSONObject) jsonArray.opt(i);
-			            	companyStr[i] = jsonObj.getString("name");
-		            	}
-		            	companyStr[length] = "Î´Öª";
-		            	companyAdapter = new ArrayAdapter<String>(mActivity, android.R.layout.simple_spinner_item, companyStr);
-		            	companyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		            	companySpinner.setAdapter(companyAdapter);
-		            	companySpinner.setSelection(length);
-		            }
-				} catch (JSONException e1) {
-					e1.printStackTrace();
+					JSONObject result = new JSONObject(httpResult); // è½¬æ¢ä¸ºJSONObject
+					companyId = result.getInt("companyId");
+					String receiverNameStr = result.getString("recName");
+					String receiverMobilephoneStr = result.getString("mobile");
+
+					if (companyId == -1) { // è·å–ä¸Šä¸€æ¬¡çš„å¿«é€’å…¬å¸
+						companyId = mySharedPreferences.getInt(
+								"prev_company_id", -1);
+					} else {
+						editor.putInt("prev_company_id", companyId);
+						editor.commit();
+					}
+					receiverName.setText(receiverNameStr);
+					receiverMobilephone.setText(receiverMobilephoneStr);
+					String companyStr2 = result.getString("companyName")
+							.toString();
+					Log.e("companyName:", companyStr2);
+					for (int i = 0; i < length; i++) {
+						if (companyStr[i].equals(companyStr2))
+							companySpinner.setSelection(i);
+					}
+					Toast.makeText(mActivity, "å¿«ä»¶æŸ¥è¯¢æˆåŠŸ", Toast.LENGTH_SHORT)
+							.show();
+				} catch (JSONException e) { // å¿«ä»¶æŸ¥è¯¢å¼‚å¸¸
+					Toast.makeText(mActivity, "å¿«ä»¶ä¸å­˜åœ¨", Toast.LENGTH_SHORT)
+							.show();
+					companyId = mySharedPreferences.getInt("prev_company_id",
+							-1); // è·å–ä¸Šä¸€æ¬¡çš„å¿«é€’å…¬å¸
+					receiverName.setText("0");
+					receiverMobilephone.setText("");
+				}
+
+				// String companyStr2 = "";
+				// switch(companyId) {
+				// case -1: companyStr2 = "æœªçŸ¥"; break;
+				// case 0: companyStr2 = "æ ¡å›­è°·å¿«é€’"; break;
+				// case 2: companyStr2 = "EMS"; break;
+				// case 100: companyStr2 = "ç”³é€šå¿«é€’"; break;
+				// case 101: companyStr2 = "åœ†é€šå¿«é€’"; break;
+				// case 102: companyStr2 = "éŸµè¾¾å¿«è¿"; break;
+				// case 103: companyStr2 = "å®…æ€¥é€"; break;
+				// case 106: companyStr2 = "è”é‚¦å¿«é€’"; break;
+				// case 500: companyStr2 = "ä¸­é€šé€Ÿé€’"; break;
+				// case 504: companyStr2 = "å¤©å¤©å¿«é€’"; break;
+				// case 505: companyStr2 = "é¡ºä¸°å¿«é€’"; break;
+				// default: break;
+				// }
+
+				receiverMobilephone.requestFocus(); // è·å–ç„¦ç‚¹
+				receiverMobilephone.setSelection(receiverMobilephone.getText()
+						.toString().length()); // è®¾ç½®å…‰æ ‡ä½ç½®
+			}
+		} else if (requestCode == 3) { // è®¾ç½®èµ·å§‹ç¼–å·
+			int serialNumber = mySharedPreferences.getInt(
+					"serial_number_start", 0);
+			arrayList.clear();
+			map1.put("item", "ç™»å½•æ—¶é—´");
+			map1.put("item_content", login_time);
+			map2.put("item", "å·²å…¥åº“");
+			map2.put("item_content", instoreBills + " ä»¶");
+			String prevInstoreBillNo = mySharedPreferences.getString(
+					"prev_instore_bill_no", "");
+			map3.put("item", "ä¸Šä¸€æ¬¡å…¥åº“ç¼–å·");
+			map3.put("item_content", prevInstoreBillNo);
+			String currentInStoreBillNo = "";
+			// ç”Ÿæˆå…¥åº“ç¼–å·ï¼Œ20140601-001ï¼Œæ’é™¤ä»¥â€œxygâ€å¼€å¤´çš„ç¼–å·
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd"); // è·å–å½“å‰æ—¶é—´
+			String datePre = simpleDateFormat.format(new java.util.Date());
+			currentInStoreBillNo = datePre + "-" + serialNumber;
+			map4.put("item", "å½“å‰å…¥åº“ç¼–å·");
+			map4.put("item_content", currentInStoreBillNo);
+
+			arrayList.add(map1);
+			arrayList.add(map2);
+			arrayList.add(map3);
+			arrayList.add(map4);
+			adapter.notifyDataSetChanged();
+
+			editor.putInt("serial_number", serialNumber); // ä¿å­˜
+			editor.putString("current_instore_bill_no", currentInStoreBillNo);
+			editor.commit();
+		} else if (requestCode == 5) { // æŸ¥è¯¢ç‰©æµå…¬å¸åˆ—è¡¨
+			if (resultCode == Activity.RESULT_OK) {
+				String result = data.getStringExtra("Result"); // æ¥æ”¶Intentä¼ é€’è¿‡æ¥çš„æŸ¥è¯¢ç»“æœ
+				if (result.equals("æŸ¥è¯¢å¤±è´¥") || result.equals("æŸ¥è¯¢ä¸ºç©º")) {
+					new AlertDialog.Builder(mActivity).setTitle("å¤±è´¥")
+							.setMessage("å½“å‰ç½‘ç»œä¸ç»™åŠ›ï¼ŒæŸ¥è¯¢ç‰©æµå…¬å¸åˆ—è¡¨å¤±è´¥ï¼Œè¯·ç¨åé‡è¯•ã€‚")
+							.setNeutralButton("ç¡®å®š", null).show();
+				} else {
+					Toast.makeText(mActivity, "æŸ¥è¯¢ç‰©æµå…¬å¸åˆ—è¡¨æˆåŠŸï¼", Toast.LENGTH_SHORT)
+							.show();
+					try {
+						JSONArray jsonArray = new JSONArray(result);
+						length = jsonArray.length();
+						if (length > 0) {
+							companyStr = new String[length + 1];
+							for (int i = 0; i < length; i++) {
+								JSONObject jsonObj = (JSONObject) jsonArray
+										.opt(i);
+								companyStr[i] = jsonObj.getString("name");
+							}
+							companyStr[length] = "æœªçŸ¥";
+							companyAdapter = new ArrayAdapter<String>(
+									mActivity,
+									android.R.layout.simple_spinner_item,
+									companyStr);
+							companyAdapter
+									.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+							companySpinner.setAdapter(companyAdapter);
+							companySpinner.setSelection(length);
+						}
+					} catch (JSONException e1) {
+						e1.printStackTrace();
+					}
 				}
 			}
 		}
+		super.onActivityResult(requestCode, resultCode, data);
 	}
-	super.onActivityResult(requestCode, resultCode, data);
-}
 
-private boolean isLetterOrDigit(String str) {
-	int j = 0;
-	for(int i=0; i<str.length(); i++) {
-		if((str.charAt(i) >= '0' && str.charAt(i) <= '9')
-		|| (str.charAt(i) >= 'a' && str.charAt(i) <= 'z')
-		|| (str.charAt(i) >= 'A' && str.charAt(i) <= 'Z')) {
-			j++;
-		}
-		if(j == str.length()) {
-			return true;
-		}
-	}
-	return false;
-}
-
-private class MainHandler extends Handler {
-	public void handleMessage(Message msg) {
-		switch(msg.what) {
-		case HadwareControll.BARCODE_READ:
-			String scanResult0 = msg.obj + "";		//ÌõĞÎÂëÉ¨Ãè½á¹û
-			//V2.1ĞÂÔö¹¦ÄÜ£ºÉ¨ÂëÈë¿âÊ±½«Ç°ºóµÄ¡°*¡±ºÅ¹ıÂËµô
-			String scanResult = "";
-			if(scanResult0.charAt(0) == '*') {	//Èç¹ûÊ××ÖÄ¸Îª¡°*¡±ºÅ£¬ÔòÈ¥µôÇ°ºóµÄ¡°*¡±ºÅ
-				scanResult = scanResult0.substring(1, scanResult0.length()-1);
+	private boolean isLetterOrDigit(String str) {
+		int j = 0;
+		for (int i = 0; i < str.length(); i++) {
+			if ((str.charAt(i) >= '0' && str.charAt(i) <= '9')
+					|| (str.charAt(i) >= 'a' && str.charAt(i) <= 'z')
+					|| (str.charAt(i) >= 'A' && str.charAt(i) <= 'Z')) {
+				j++;
 			}
-			else {
-				scanResult = scanResult0;
-			}
-			mailNo.setText(scanResult.replaceAll(" ", ""));	//È¥µôËùÓĞ¿Õ¸ñ
-			play_sound();
-			//É¨ÃèÍê±ÏÖ±½Ó²éÑ¯¿ì¼ş
-			mailNoStr = mailNo.getText().toString().trim();
-			if(!mailNoStr.equals("") && isLetterOrDigit(mailNoStr)) {
-				Intent intent = new Intent(mActivity, LoadingIIActivity.class);
-				intent.putExtra("mailNo", mailNoStr);
-				startActivityForResult(intent, 2);
-			}
-			else {
-				Toast.makeText(mActivity,"ÔËµ¥ºÅÓĞÎó£¬ÇëÖØĞÂÉ¨Ãè£¡",Toast.LENGTH_SHORT).show();
-			}
-			break;
-		default:
-			break;
-		}
-	}
-};
-
-public boolean onKeyDown(int keyCode, KeyEvent event) {
-	if(keyCode == KeyEvent.KEYCODE_F9 || keyCode == KeyEvent.KEYCODE_F10 || keyCode == KeyEvent.KEYCODE_F11) {
-		//V2.1.1 ĞŞ¸Ä£º»ÆÉ«°´¼ü¶ş´Î°´ÏÂÊ±£¬¿ì¼şÖ±½ÓÈë¿â£¨²»ÓÃÔÙµã»÷ÆÁÄ»ÉÏµÄ¡°¿ì¼şÈë¿â¡±°´Å¥£©,
-		// ÅĞ¶ÏÒÀ¾İ£ºÈô¡°ÔËµ¥ºÅ¡±²»Îª¿Õ£¬Ôòµ÷ÓÃÈë¿âº¯Êı
-		if(!mailNo.getText().toString().equals("")) {
-			billInStore();	//¿ì¼şÈë¿â
-		}
-		else {
-			if(press) {
-				HadwareControll.scan_start();
-				press = false;
+			if (j == str.length()) {
 				return true;
 			}
 		}
+		return false;
 	}
-	if(keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_HOME){
-		new AlertDialog.Builder(mActivity)
-						.setTitle("ÍË³ö")
-						.setMessage("È·¶¨ÒªÍË³öĞ£Ô°¹ÈÂğ£¿")
-						.setNegativeButton("È¡Ïû", null)
-						.setPositiveButton("ÍË³ö", new DialogInterface.OnClickListener(){
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								mActivity.finish();
-							}
-						})
-						.show();
-	}
-	return true;
-}
 
-public boolean onKeyUp(int keyCode, KeyEvent event) {
-	if (keyCode == KeyEvent.KEYCODE_F9 || keyCode == KeyEvent.KEYCODE_F10 || keyCode == KeyEvent.KEYCODE_F11) {
-		HadwareControll.scan_stop();
-		press = true;
+	private class MainHandler extends Handler {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case HadwareControll.BARCODE_READ:
+				String scanResult0 = msg.obj + ""; // æ¡å½¢ç æ‰«æç»“æœ
+				// V2.1æ–°å¢åŠŸèƒ½ï¼šæ‰«ç å…¥åº“æ—¶å°†å‰åçš„â€œ*â€å·è¿‡æ»¤æ‰
+				String scanResult = "";
+				if (scanResult0.charAt(0) == '*') { // å¦‚æœé¦–å­—æ¯ä¸ºâ€œ*â€å·ï¼Œåˆ™å»æ‰å‰åçš„â€œ*â€å·
+					scanResult = scanResult0.substring(1,
+							scanResult0.length() - 1);
+				} else {
+					scanResult = scanResult0;
+				}
+				mailNo.setText(scanResult.replaceAll(" ", "")); // å»æ‰æ‰€æœ‰ç©ºæ ¼
+				play_sound();
+				// æ‰«æå®Œæ¯•ç›´æ¥æŸ¥è¯¢å¿«ä»¶
+				mailNoStr = mailNo.getText().toString().trim();
+				if (!mailNoStr.equals("") && isLetterOrDigit(mailNoStr)) {
+					Intent intent = new Intent(mActivity,
+							LoadingIIActivity.class);
+					intent.putExtra("mailNo", mailNoStr);
+					startActivityForResult(intent, 2);
+				} else {
+					Toast.makeText(mActivity, "è¿å•å·æœ‰è¯¯ï¼Œè¯·é‡æ–°æ‰«æï¼",
+							Toast.LENGTH_SHORT).show();
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	};
+
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_F9 || keyCode == KeyEvent.KEYCODE_F10
+				|| keyCode == KeyEvent.KEYCODE_F11) {
+			// V2.1.1 ä¿®æ”¹ï¼šé»„è‰²æŒ‰é”®äºŒæ¬¡æŒ‰ä¸‹æ—¶ï¼Œå¿«ä»¶ç›´æ¥å…¥åº“ï¼ˆä¸ç”¨å†ç‚¹å‡»å±å¹•ä¸Šçš„â€œå¿«ä»¶å…¥åº“â€æŒ‰é’®ï¼‰,
+			// åˆ¤æ–­ä¾æ®ï¼šè‹¥â€œè¿å•å·â€ä¸ä¸ºç©ºï¼Œåˆ™è°ƒç”¨å…¥åº“å‡½æ•°
+			if (!mailNo.getText().toString().equals("")) {
+				billInStore(); // å¿«ä»¶å…¥åº“
+			} else {
+				if (press) {
+					HadwareControll.scan_start();
+					press = false;
+					return true;
+				}
+			}
+		}
+		if (keyCode == KeyEvent.KEYCODE_BACK
+				|| keyCode == KeyEvent.KEYCODE_HOME) {
+			new AlertDialog.Builder(mActivity)
+					.setTitle("é€€å‡º")
+					.setMessage("ç¡®å®šè¦é€€å‡ºæ ¡å›­è°·å—ï¼Ÿ")
+					.setNegativeButton("å–æ¶ˆ", null)
+					.setPositiveButton("é€€å‡º",
+							new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									mActivity.finish();
+								}
+							}).show();
+		}
 		return true;
 	}
-	return true;
-}
 
-public void play_sound() {
-	try {
-		if (mediaPlayer == null)
-			mediaPlayer = MediaPlayer.create(mActivity, R.raw.beep);
-		mediaPlayer.stop();
-		mediaPlayer.prepare();
-		mediaPlayer.start();
-	} catch (Exception e) {
-		e.printStackTrace();
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_F9 || keyCode == KeyEvent.KEYCODE_F10
+				|| keyCode == KeyEvent.KEYCODE_F11) {
+			HadwareControll.scan_stop();
+			press = true;
+			return true;
+		}
+		return true;
 	}
-}
 
-public void onDestroy() {
-	HadwareControll.Close();
-	HadwareControll.m_handler = null;
-	super.onDestroy();
-}
-	
+	public void play_sound() {
+		try {
+			if (mediaPlayer == null)
+				mediaPlayer = MediaPlayer.create(mActivity, R.raw.beep);
+			mediaPlayer.stop();
+			mediaPlayer.prepare();
+			mediaPlayer.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void onDestroy() {
+		HadwareControll.Close();
+		HadwareControll.m_handler = null;
+		super.onDestroy();
+	}
+
 }

@@ -123,7 +123,7 @@ public class LoginActivity extends Activity {
 			Intent intent = new Intent(LoginActivity.this,
 					LoadingActivity.class);
 			intent.putExtra("loadingType", "login");
-			intent.putExtra("methodName", "validate");
+			intent.putExtra("methodName", "login");
 			// 查询管理员id、密码
 			// intent.putExtra("SQL",
 			// "select id, adm_password from 020_admin where adm_name=\"" +
@@ -144,7 +144,8 @@ public class LoginActivity extends Activity {
 			int adminId = 0;
 			String result = data.getStringExtra("Result"); // 接收Intent传递过来的查询结果
 			Log.e("LoginTest:", result);
-			if (result.equals("查询失败")) {
+			
+			if (result.equals("-1")) {
 				new AlertDialog.Builder(LoginActivity.this)
 						.setTitle("登录失败")
 						.setMessage("当前网络不给力，登录失败，请稍后重试。")
@@ -157,7 +158,7 @@ public class LoginActivity extends Activity {
 										usernameET.setText("");
 									}
 								}).show();
-			} else if (result.equals("登录失败")) {
+			} else if (result.equals("0")) {
 				new AlertDialog.Builder(LoginActivity.this)
 						.setTitle("登录失败")
 						.setMessage("用户名不存在，请重新登录。")
@@ -170,13 +171,13 @@ public class LoginActivity extends Activity {
 										usernameET.setText("");
 									}
 								}).show();
-			} else if (result.equals("登录成功")) {
+			} else {
 				// String jsonString = result.substring(1, result.length()-1);
 				// //去掉两头的中括号
 				// try {
 				// JSONObject jsonObject = new JSONObject(jsonString);
 				// //转换为JSONObject
-				// adminId = jsonObject.getInt("id"); //管理员ID
+				
 				// password = jsonObject.getString("adm_password"); //密码
 				// } catch (JSONException e1) {
 				// e1.printStackTrace();
@@ -185,6 +186,7 @@ public class LoginActivity extends Activity {
 				// String password2MD5 = string2MD5(passwordUserInput);
 				// if(passwordUserInput.equals(password)) {
 				// if(password2MD5.equals(password)) {
+				adminId = Integer.parseInt(result); //管理员ID
 				Toast.makeText(LoginActivity.this, "登录成功！", Toast.LENGTH_SHORT)
 						.show();
 				String loginTimeStore = mySharedPreferences.getString(

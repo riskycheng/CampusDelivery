@@ -1,5 +1,7 @@
 package com.chengjian.vgoo2;
 
+import com.chengjian.utils.ConstantParams;
+import com.chengjian.utils.LoadingActivity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -7,19 +9,23 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
 public class AboutTabFragment extends Fragment {
 	private Activity mActivity;
 	private FrameLayout setting_setNum_FrameLayout, setting_setSMS,
-			setting_help_FrameLayout, setting_signOut_FrameLayout;
+			setting_help_FrameLayout, setting_check_Update,
+			setting_signOut_FrameLayout;
 	SharedPreferences mySharedPreferences;
 	SharedPreferences.Editor editor;
+	public static int adminId = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -53,15 +59,20 @@ public class AboutTabFragment extends Fragment {
 				.findViewById(R.id.setting_01_setStartNum);
 		setting_setNum_FrameLayout.setOnClickListener(new myClickListener());
 
-		setting_setNum_FrameLayout = (FrameLayout) view
+		setting_setSMS = (FrameLayout) view
 				.findViewById(R.id.setting_02_setSMS);
-		setting_setNum_FrameLayout.setOnClickListener(new myClickListener());
+		setting_setSMS.setOnClickListener(new myClickListener());
 
 		setting_help_FrameLayout = (FrameLayout) view
 				.findViewById(R.id.setting_03_help);
 		setting_help_FrameLayout.setOnClickListener(new myClickListener());
+
+		setting_check_Update = (FrameLayout) view
+				.findViewById(R.id.setting_04_update);
+		setting_check_Update.setOnClickListener(new myClickListener());
+
 		setting_signOut_FrameLayout = (FrameLayout) view
-				.findViewById(R.id.setting_04_signOut);
+				.findViewById(R.id.setting_05_signOut);
 		setting_signOut_FrameLayout.setOnClickListener(new myClickListener());
 
 		mySharedPreferences = mActivity.getSharedPreferences("myPreference",
@@ -78,15 +89,61 @@ public class AboutTabFragment extends Fragment {
 						SettingActivity.class), 3);
 				break;
 			case R.id.setting_02_setSMS:
-				Toast.makeText(mActivity, "功能升级中...", Toast.LENGTH_SHORT)
-						.show();
+				// Toast.makeText(mActivity, "功能升级中...", Toast.LENGTH_SHORT)
+				// .show();
+				// 设置短信模板功能
+				// 获取当前用户id
+				adminId = mySharedPreferences.getInt("admin_id", 0);
+				LayoutInflater inflater = (LayoutInflater) mActivity
+						.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+				final View view = inflater.inflate(R.layout.sms_layout, null);
+				new AlertDialog.Builder(mActivity)
+						.setTitle("添加短信模板：")
+						.setView(view)
+						.setNegativeButton("取消", null)
+						.setPositiveButton("确定",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										EditText smsContentEditext = (EditText) view
+												.findViewById(R.id.Editetext_sms_content);
+										String smsContent = smsContentEditext
+												.getText().toString().trim();
+										if (!smsContent.equals("")) {
+											// 调用WebService方法 写入结果
+											Intent intent = new Intent(
+													mActivity,
+													LoadingActivity.class);
+											intent.putExtra("loadingType",
+													"add_sms");
+											intent.putExtra("methodName",
+													"setsms");
+											intent.putExtra("smsContent",
+													smsContent);
+											intent.putExtra("account", adminId);
+											startActivityForResult(intent, 2);
+
+										} else {
+											Toast.makeText(mActivity,
+													"输入为空，添加短信模板失败!",
+													Toast.LENGTH_SHORT).show();
+											Log.e("add sms:", "failed!");
+										}
+									}
+								}).show();
+
 				break;
 			case R.id.setting_03_help:
 				startActivityForResult(
 						new Intent(mActivity, HelpActivity.class), 4);
 				break;
 
-			case R.id.setting_04_signOut:
+			case R.id.setting_04_update:
+				Toast.makeText(mActivity, "检查更新功能升级中...", Toast.LENGTH_SHORT)
+						.show();
+				break;
+			case R.id.setting_05_signOut:
 				new AlertDialog.Builder(mActivity)
 						.setTitle("退出当前帐号")
 						.setMessage("退出后将删除当前帐号信息，下次登录需要重新输入帐号。确定要退出吗？")
@@ -115,6 +172,32 @@ public class AboutTabFragment extends Fragment {
 			}
 		}
 
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+		// 如果请求类型是 增加 短信模板
+		if (requestCode == 2) {
+			if (resultCode == Activity.RESULT_OK) {
+				String httpResult = data
+						.getStringExtra(ConstantParams.EXTRA_QUERYBILL_RESULT);
+
+				Log.e("httpResult:", httpResult);
+				if (httpResult.equals("0")) {
+					Toast.makeText(mActivity, "增加短信模板失败!", Toast.LENGTH_SHORT)
+							.show();
+					return;
+				}
+				// 增加成功
+				Toast.makeText(mActivity, "增加短信模板成功!", Toast.LENGTH_SHORT)
+						.show();
+				Log.e("set_sms:", "success!");
+
+			}
+		}
+
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 }

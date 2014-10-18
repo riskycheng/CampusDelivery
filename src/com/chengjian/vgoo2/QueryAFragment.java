@@ -1,11 +1,17 @@
 package com.chengjian.vgoo2;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.chengjian.entity.Express;
 import com.chengjian.utils.ConstantParams;
 import com.chengjian.utils.LoadingActivity;
+import com.chengjian.utils.ParsingTool;
 import com.chengjian.utils.QueryFromWaycodeActivity;
 import com.chengjian.vgoo2.R;
 import android.app.Activity;
@@ -37,12 +43,15 @@ public class QueryAFragment extends Fragment {
 	private TextView TextView_DeliveryName;
 	private TextView TextView_RecName;
 	private TextView TextView_Status;
-	private TextView TextView_Time;
+	private TextView TextView_Mobile;
 	private Button Button_submit;
 	private Button Button_query;
 	private Button Button_clear;
 	public String mailNoStr;
 	public String QueryResult;
+	public static int cur_id = 0;
+	public static String cur_bill_no = "";
+	public static boolean isExist = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -77,7 +86,8 @@ public class QueryAFragment extends Fragment {
 				.findViewById(R.id.tab_a_TextView_RecName);
 		TextView_Status = (TextView) view
 				.findViewById(R.id.tab_a_TextView_Status);
-		TextView_Time = (TextView) view.findViewById(R.id.tab_a_TextView_Time);
+		TextView_Mobile = (TextView) view
+				.findViewById(R.id.tab_a_TextView_mobile);
 
 		Button_submit = (Button) view.findViewById(R.id.Button_submit);
 		Button_submit.setOnClickListener(new myClickListener());
@@ -85,7 +95,7 @@ public class QueryAFragment extends Fragment {
 
 		Button_query = (Button) view.findViewById(R.id.Btn_queryTabA);
 		Button_query.setOnClickListener(new myClickListener());
-		
+
 		Button_clear = (Button) view.findViewById(R.id.Btn_clear);
 		Button_clear.setOnClickListener(new myClickListener());
 	}
@@ -125,7 +135,44 @@ public class QueryAFragment extends Fragment {
 			 * break;
 			 */
 			case R.id.Button_submit:
-				Toast.makeText(mActivity, "submit", Toast.LENGTH_SHORT).show();
+				if(!isExist){
+					Toast.makeText(mActivity, "无法重发：当前信息不存在，请先入库!", Toast.LENGTH_SHORT).show();
+					break;
+				}
+				// 获得当前快递的id
+				Log.e("cur_express_id:", cur_id + "");
+
+				// 调用URL 重发短信
+				// 入库成功后调用URL
+				new Thread() {
+					@Override
+					public void run() {
+						try {
+							String urlTemp = "http://e-zhaosheng.com/vgoo/syn_fwz.php?act=syn_send&bill_id="
+									+ cur_id + "&is_forced=1";
+							URL url = new URL(urlTemp);
+							HttpURLConnection conn = (HttpURLConnection) url
+									.openConnection();
+							conn.setRequestProperty("accept", "*/*");
+							conn.setRequestProperty("connection", "Kepp-Alive");
+							conn.setRequestProperty("user-agent",
+									"Mozilla/4.0(compatible; MSIE 6.0; Windows NT 5.1; SV1)");
+							conn.connect();
+						} catch (Exception e) {
+							e.printStackTrace();
+							Toast.makeText(mActivity, "HTTP访问异常！",
+									Toast.LENGTH_SHORT).show();
+						}
+						// finally {
+						// try {
+						// bufferedReader.close();
+						// } catch (IOException e) {
+						// e.printStackTrace();
+						// }
+						// }
+					}
+				}.start();
+				Toast.makeText(mActivity, "bill_no:" + cur_bill_no + " 短信重发成功!" , Toast.LENGTH_SHORT).show();
 				break;
 
 			case R.id.Btn_queryTabA:
@@ -135,22 +182,28 @@ public class QueryAFragment extends Fragment {
 					if (isLetterOrDigit(mailNoStr)) {
 						// 手动输入完毕直接查询快件
 						Intent intent = new Intent(mActivity,
-								QueryFromWaycodeActivity.class);
-						intent.putExtra("mailNo", mailNoStr);
-						startActivityForResult(intent, 2);
+								LoadingActivity.class);
+						intent.putExtra("loadingType", "query_via_billno");
+						intent.putExtra("methodName", "querybill");
+						intent.putExtra("billNo", mailNoStr);
+						//intent.putExtra("account", admin)
+						startActivityForResult(intent,
+								ConstantParams.QUERY_VIA_BILLNO);
 
 					} else {
 						Toast.makeText(mActivity, "运单号只能包含字母或数字，请重新输入！",
 								Toast.LENGTH_SHORT).show();
 					}
-				}else{
-					Toast.makeText(mActivity, "输入不能为空!", Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(mActivity, "输入不能为空!", Toast.LENGTH_SHORT)
+							.show();
 				}
 				break;
-				
+
 			case R.id.Btn_clear:
-				//重置输入框
+				// 重置输入框
 				EditText_yundanhao.setText("");
+				isExist = false;
 				break;
 			}
 		}
@@ -174,52 +227,49 @@ public class QueryAFragment extends Fragment {
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+		// if(requestCode == 2 && resultCode == Activity.RESULT_OK)
+		// Log.e("result:", data.getStringExtra("Result"));
+
 		// 如果请求类型是查询快递单号信息
-		if (requestCode == 2) {
+		if (requestCode == ConstantParams.QUERY_VIA_BILLNO) {
 			if (resultCode == Activity.RESULT_OK) {
 				String httpResult = data
 						.getStringExtra(ConstantParams.EXTRA_QUERYBILL_RESULT);
-				Log.e("QueryA:httpResult:", httpResult);
-				if (httpResult.equals("")) {
+				Log.e("QueryA_Result:", httpResult);
+				if (httpResult.equals("[]")) {
 					Toast.makeText(mActivity, "不存在,请先入库!", Toast.LENGTH_SHORT)
 							.show();
 					TextView_DeliveryName.setText("无");
 					TextView_RecName.setText("无");
 					TextView_Status.setText("无");
-					TextView_Time.setText("无");
+					TextView_Mobile.setText("无");
+					//并将重发短信按钮设置为disable
+					isExist = false;
 					return;
 				}
+				//有结果则将按钮置为enable
+				isExist = true;
 				// 转成Json
 				try {
-
-					JSONObject jsonObject = new JSONObject(httpResult);
-					TextView_DeliveryName.setText(jsonObject
-							.getString("companyName"));
-					TextView_RecName.setText(jsonObject.getString("recName"));
+					ArrayList<Express> expresses = ParsingTool
+							.Json2Expresses(httpResult);
+					if (expresses.size() == 0) {
+						Toast.makeText(mActivity, "不存在，请先入库!",
+								Toast.LENGTH_SHORT).show();
+						return;
+					}
+					Express express = expresses.get(0);
 					// 解析状态
-					int status = jsonObject.getInt("bill_status");
-					if (status == 0)
-						TextView_Status.setText("待到站");
-					else if (status == 1)
-						TextView_Status.setText("已到站");
-					else if (status == 2)
-						TextView_Status.setText("已预约取件");
-					else if (status == 3)
-						TextView_Status.setText("已预约上门取件");
-					else if (status == 4)
-						TextView_Status.setText("已提货");
-					else if (status == 5)
-						TextView_Status.setText("站点拒收");
-					else if (status == 6)
-						TextView_Status.setText("客户拒收");
-					else if (status == 7)
-						TextView_Status.setText("预约件已找到");
-					else
-						TextView_Status.setText("未知");
-
-					TextView_Time.setText(jsonObject.getString("mobile"));
-				} catch (JSONException e) {
+					cur_id = express.getId();
+					cur_bill_no = express.getBill_no();
+					TextView_Status.setText(express.getBill_status());
+					TextView_Mobile.setText(express.getMobile());
+					TextView_DeliveryName.setText(express.getName());
+					TextView_RecName.setText(express.getRec_name());
+				} catch (Exception e) {
 					Log.e("ParsingResult2Json_error:", e.getMessage());
+					Toast.makeText(mActivity, "查询出错，重试!", Toast.LENGTH_LONG)
+							.show();
 				}
 			}
 		}

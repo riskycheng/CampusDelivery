@@ -30,6 +30,16 @@
             android:padding="7dp"
             android:text="快递公司名"
             android:textColor="#000" />
+        
+        <TextView
+            android:id="@+id/listview_BillNo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dip"
+            android:layout_toRightOf="@id/listview_Delivery"
+            android:padding="7dp"
+            android:text="运单号"
+            android:textColor="#000" />
 
         <TextView
             android:id="@+id/listview_BillStatus"

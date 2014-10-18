@@ -213,7 +213,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tab_a_TextView_Time"
+                android:id="@+id/tab_a_TextView_mobile"
                 android:layout_width="170dp"
                 android:layout_height="35dip"
                 android:layout_gravity="center_vertical"

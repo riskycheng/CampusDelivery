@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import android.util.Log;
 
 import com.chengjian.entity.Express;
+import com.chengjian.entity.SavedBill;
 
 public class ParsingTool {
 
@@ -30,10 +31,15 @@ public class ParsingTool {
 			for (int i = 0; i < length; i++) {
 				JSONObject jsonObject = jsonArray.getJSONObject(i);
 				Express express = new Express();
-				express.setExpressName(jsonObject.getString("name"));
-				express.setFetchTime(jsonObject.getString("tihuo_time"));
-				express.setRecName(jsonObject.getString("rec_name"));
-				express.setExpressStatus(jsonObject.getBoolean("bill_status"));
+				express.setId(jsonObject.getInt("id"));
+				express.setBill_number(jsonObject.getString("bill_number"));
+				express.setBill_no(jsonObject.getString("bill_no"));
+				express.setMobile(jsonObject.getString("mobile"));
+				express.setRec_name(jsonObject.getString("rec_name"));
+				express.setBill_status(jsonObject.getInt("bill_status"));
+				express.setTime(jsonObject.getString("time"));
+				express.setName(jsonObject.getString("name"));
+
 				result.add(express);
 			}
 		} catch (JSONException e) {
@@ -76,6 +82,21 @@ public class ParsingTool {
 		}
 
 		return md5StrBuff.toString();
+	}
+
+	// parsing into savedBill
+	public static SavedBill Parsing2SavedBill(String mailNoStr,
+			String receiverNameStr, String companyId,
+			String receiverMobilephoneStr, String adminId,
+			String currentInStoreBillNo) {
+		SavedBill savedBill = new SavedBill();
+		savedBill.setMailNoStr(mailNoStr);
+		savedBill.setReceiverNameStr(receiverNameStr);
+		savedBill.setCompanyId(companyId);
+		savedBill.setReceiverMobilephoneStr(receiverMobilephoneStr);
+		savedBill.setAdminId(adminId);
+		savedBill.setCurrentInStoreBillNo(currentInStoreBillNo);
+		return savedBill;
 	}
 
 }

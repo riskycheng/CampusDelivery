@@ -145,23 +145,22 @@ public class QueryBFragment extends Fragment {
 				if (isLetterOrDigit(inputValue)) {
 					// 手动输入完毕直接查询快件
 					Intent intent = new Intent(mActivity, LoadingActivity.class);
-					intent.putExtra("loadingType", "query");
-					intent.putExtra("methodName", "ExecuteJson");
+					intent.putExtra("methodName", "querybill");
 					// 判断当前选择
 					int selection = Spinner_QueryType.getSelectedItemPosition();
-					if (selection == 0)
+					if (selection == 0) {
 						// 手机号查询
-						intent.putExtra(
-								"SQL",
-								"select a.name,b.tihuo_time,b.rec_name,b.bill_status from 020_delivery a,020_way_bill b where a.fwz_id=1 and b.delivery_id=a.id and b.mobile=\""
-										+ inputValue + "\"");
-					else
+						intent.putExtra("loadingType", "query_via_mobile");
+						intent.putExtra("mobile", inputValue);
+						startActivityForResult(intent,
+								ConstantParams.QUERY_VIA_MOBILE);
+					} else {
 						// 运单号查询
-						intent.putExtra(
-								"SQL",
-								"select a.name,b.tihuo_time,b.rec_name,b.bill_status from 020_delivery a,020_way_bill b where a.fwz_id=1 and b.delivery_id=a.id and b.bill_number="
-										+ inputValue);
-					startActivityForResult(intent, 1);
+						intent.putExtra("loadingType", "query_via_billno");
+						intent.putExtra("billNo", inputValue);
+						startActivityForResult(intent,
+								ConstantParams.QUERY_VIA_BILLNO);
+					}
 
 				} else {
 					Toast.makeText(mActivity, "运单号只能包含字母或数字，请重新输入！",
@@ -194,7 +193,8 @@ public class QueryBFragment extends Fragment {
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
 		// 如果请求类型是查询快递单号信息
-		if (requestCode == 1) {
+		if (requestCode == ConstantParams.QUERY_VIA_BILLNO
+				|| requestCode == ConstantParams.QUERY_VIA_MOBILE) {
 			if (resultCode == Activity.RESULT_OK) {
 				String httpResult = data
 						.getStringExtra(ConstantParams.EXTRA_QUERYBILL_RESULT);
@@ -215,10 +215,11 @@ public class QueryBFragment extends Fragment {
 					simpleAdapter = new SimpleAdapter(mActivity,
 							convert2List(expresses),
 							R.layout.listview_result_layout, new String[] {
-									"deliveryImg", "deliveryID", "time",
-									"receiver", "status" }, new int[] {
+									"deliveryImg", "deliveryID", "billNo",
+									"time", "receiver", "status" }, new int[] {
 									R.id.listview_image,
-									R.id.listview_Delivery, R.id.listview_Time,
+									R.id.listview_Delivery,
+									R.id.listview_BillNo, R.id.listview_Time,
 									R.id.listview_RecName,
 									R.id.listview_BillStatus });
 					ListView_Query_AllResults.setAdapter(simpleAdapter);
@@ -241,14 +242,14 @@ public class QueryBFragment extends Fragment {
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		for (Express express : expresses) {
 			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("deliveryID", express.getExpressName());
+			map.put("deliveryID", express.getName());
 			// 根据名称确定图片
-			String name = express.getExpressName().trim();
+			String name = express.getName().trim();
 			if (name.startsWith("圆通"))
 				map.put("deliveryImg", R.drawable.yuantong);
 			else if (name.startsWith("天天"))
 				map.put("deliveryImg", R.drawable.tiantain);
-			else if (name.startsWith("顺丰"))
+			else if (name.startsWith("顺丰") || name.startsWith("顺风"))
 				map.put("deliveryImg", R.drawable.shunfeng);
 			else if (name.startsWith("EMS"))
 				map.put("deliveryImg", R.drawable.ems);
@@ -264,9 +265,11 @@ public class QueryBFragment extends Fragment {
 				map.put("deliveryImg", R.drawable.zhaijisong);
 			else
 				map.put("deliveryImg", R.drawable.other);
-			map.put("time", express.getFetchTime());
-			map.put("receiver", express.getRecName());
-			map.put("status", express.getExpressStatus());
+
+			map.put("billNo", express.getBill_no());
+			map.put("time", express.getTime());
+			map.put("receiver", express.getRec_name());
+			map.put("status", express.getBill_status());
 			result.add(map);
 		}
 		return result;
