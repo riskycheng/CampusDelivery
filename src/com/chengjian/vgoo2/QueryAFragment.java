@@ -3,20 +3,12 @@ package com.chengjian.vgoo2;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.chengjian.entity.Express;
 import com.chengjian.utils.ConstantParams;
 import com.chengjian.utils.LoadingActivity;
 import com.chengjian.utils.ParsingTool;
-import com.chengjian.utils.QueryFromWaycodeActivity;
 import com.chengjian.vgoo2.R;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

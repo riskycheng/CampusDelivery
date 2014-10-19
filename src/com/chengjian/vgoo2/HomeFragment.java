@@ -5,6 +5,8 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,8 +43,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemSelectedListener;
 
@@ -51,7 +55,7 @@ public class HomeFragment extends Fragment {
 	private EditText mailNo, receiverName, receiverMobilephone = null;
 	private Spinner companySpinner = null;
 	private Button manualInput, replace, inStore, inStoreAdd = null;
-	private String mailNoStr = null;
+	private String mailNoStr = "";
 	private Activity mActivity;
 	int adminId = 0; // 管理员ID
 	// int serialNumber = 0; //快件编号（整型）
@@ -68,7 +72,7 @@ public class HomeFragment extends Fragment {
 
 	// 定义数据库读写对象
 	SQLiteHelper mysqHelper;
-
+	private final static int OFFSET = 100;
 	ArrayList<HashMap<String, String>> arrayList = null;
 	HashMap<String, String> map1, map2, map3, map4 = null;
 	private SimpleAdapter adapter = null;
@@ -78,6 +82,9 @@ public class HomeFragment extends Fragment {
 	int companyId = -1;
 	// 用于保存已经添加到本地的数据结构
 	public static ArrayList<SavedBill> savedBillsList = null;
+	// 用于指示当前总记录数目 和当前位置
+	public static int allBillNum = 0;
+	public static int curBillNo = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -130,19 +137,31 @@ public class HomeFragment extends Fragment {
 				String s5 = String.valueOf(adminId);
 				String s6 = mySharedPreferences.getString(
 						"current_instore_bill_no", "");
-				// 封装为SavedBill
-				SavedBill savebill = ParsingTool.Parsing2SavedBill(s1, s2, s3,
-						s4, s5, s6);
-				// 加入向量
-				// savedBillsList.add(savebill);
-				// 加入到数据库
-				long tempRes = mysqHelper.insertBillData(savebill);
-				if (tempRes == -1) {
-					Toast.makeText(mActivity, "保存失败：重复插入！", Toast.LENGTH_SHORT)
+
+				if (s1.equals("") || s2.equals("") || s4.equals("")) {
+					Toast.makeText(mActivity, "请填写完整的运单信息！", Toast.LENGTH_SHORT)
+							.show();
+				} else if (companyId == -1) {
+					Toast.makeText(mActivity, "无效物流公司，请手动选择！",
+							Toast.LENGTH_SHORT).show();
+				} else if (!s4.substring(0, 1).equals("1") || s4.length() != 11) {
+					Toast.makeText(mActivity, "请输入正确的手机号码！", Toast.LENGTH_SHORT)
 							.show();
 				} else {
-					Toast.makeText(mActivity, "保存成功！", Toast.LENGTH_SHORT)
-							.show();
+					// 封装为SavedBill
+					SavedBill savebill = ParsingTool.Parsing2SavedBill(s1, s2,
+							s3, s4, s5, s6);
+					// 加入向量
+					// savedBillsList.add(savebill);
+					// 加入到数据库
+					long tempRes = mysqHelper.insertBillData(savebill);
+					if (tempRes == -1) {
+						Toast.makeText(mActivity, "保存失败：重复插入！",
+								Toast.LENGTH_SHORT).show();
+					} else {
+						Toast.makeText(mActivity, "保存成功！", Toast.LENGTH_SHORT)
+								.show();
+					}
 				}
 				// Log.e("listsLength:", savedBillsList.size() + "");
 			}
@@ -157,13 +176,13 @@ public class HomeFragment extends Fragment {
 				"current_instore_bill_no", "");
 
 		arrayList = new ArrayList<HashMap<String, String>>();
-		map1 = new HashMap<String, String>();
+//		map1 = new HashMap<String, String>();
 		map2 = new HashMap<String, String>();
 		map3 = new HashMap<String, String>();
 		map4 = new HashMap<String, String>();
 
-		map1.put("item", "登录时间");
-		map1.put("item_content", login_time);
+//		map1.put("item", "登录时间");
+//		map1.put("item_content", login_time);
 		map2.put("item", "已入库");
 		map2.put("item_content", instoreBills + " 件");
 		map3.put("item", "上一次入库编号");
@@ -171,7 +190,7 @@ public class HomeFragment extends Fragment {
 		map4.put("item", "当前入库编号");
 		map4.put("item_content", currentInStoreBillNo);
 
-		arrayList.add(map1);
+//		arrayList.add(map1);
 		arrayList.add(map2);
 		arrayList.add(map3);
 		arrayList.add(map4);
@@ -327,19 +346,66 @@ public class HomeFragment extends Fragment {
 		inStore.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				billInStore(); // 快件入库
+				savedBillsList = mysqHelper.queryAllBills();
+				allBillNum = savedBillsList.size();
+				curBillNo = 0;
+				myBillInStore(); // 快件入库
 			}
 		});
-		
-		
+
+		// 长按添加到本地按钮事件：显示当前本地数据库中所有bill
 		inStoreAdd.setOnLongClickListener(new OnLongClickListener() {
-			
+
 			@Override
 			public boolean onLongClick(View v) {
-				
+
 				savedBillsList = mysqHelper.queryAllBills();
-				Toast.makeText(mActivity, savedBillsList.size()+"", Toast.LENGTH_SHORT).show();
-				
+
+				// 将当前数据库内的所有订单进行显示
+				LayoutInflater inflater = (LayoutInflater) mActivity
+						.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+				final View view = inflater.inflate(
+						R.layout.all_bills_checkout_layout, null);
+				ListView allBillsListview = (ListView) view
+						.findViewById(R.id.Listview_allBillsCheckout);
+
+				// 将结果集转化为List<Map<String,Object>>
+				List<Map<String, Object>> listData = new ArrayList<Map<String, Object>>();
+				for (SavedBill savedBill : savedBillsList) {
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("mailNo", savedBill.getMailNoStr());
+					map.put("receiver", savedBill.getReceiverNameStr());
+					listData.add(map);
+				}
+
+				// 将其转化为adapter
+				SimpleAdapter adapter = new SimpleAdapter(mActivity, listData,
+						R.layout.all_bill_checkout_details_layout,
+						new String[] { "mailNo", "receiver" }, new int[] {
+								R.id.textView_mailNo,
+								R.id.textView_receiverName });
+				allBillsListview.setAdapter(adapter);
+				// 显示总条数
+				TextView allNum = (TextView) view
+						.findViewById(R.id.TextView_allBillNum);
+				allNum.setText(savedBillsList.size() + "");
+
+				new AlertDialog.Builder(mActivity)
+						.setTitle("当前数据库所有记录：")
+						.setView(view)
+						.setNegativeButton("清空所有",
+								new DialogInterface.OnClickListener() {
+
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										// 清空所有记录
+										mysqHelper.clearAllBills();
+										Toast.makeText(mActivity, "本地记录已清空!",
+												Toast.LENGTH_SHORT).show();
+									}
+								}).setPositiveButton("知道了", null).show();
+
 				return true;
 			}
 		});
@@ -351,13 +417,15 @@ public class HomeFragment extends Fragment {
 				.toString().trim();
 		if (mailNo.equals("") || receiverNameStr.equals("")
 				|| receiverMobilephoneStr.equals("")) {
-			Toast.makeText(mActivity, "请填写完整的运单信息！", Toast.LENGTH_SHORT).show();
+			Toast.makeText(mActivity, "保存失败:请填写完整的运单信息！", Toast.LENGTH_SHORT)
+					.show();
 		} else if (companyId == -1) {
-			Toast.makeText(mActivity, "无效物流公司，请手动选择！", Toast.LENGTH_SHORT)
+			Toast.makeText(mActivity, "保存失败:无效物流公司，请手动选择！", Toast.LENGTH_SHORT)
 					.show();
 		} else if (!receiverMobilephoneStr.substring(0, 1).equals("1")
 				|| receiverMobilephoneStr.length() != 11) {
-			Toast.makeText(mActivity, "请输入正确的手机号码！", Toast.LENGTH_SHORT).show();
+			Toast.makeText(mActivity, "保存失败:请输入正确的手机号码！", Toast.LENGTH_SHORT)
+					.show();
 		} else {
 			// 获取当前入库编号
 			String currentInStoreBillNo = mySharedPreferences.getString(
@@ -376,6 +444,28 @@ public class HomeFragment extends Fragment {
 		}
 	}
 
+	private void myBillInStore() {
+		// int requestCode = curBillNo + OFFSET;
+		if (allBillNum == 0) {
+			Toast.makeText(mActivity, "当前本地为空，提交失败!", Toast.LENGTH_SHORT)
+					.show();
+			return;
+		}
+		SavedBill savedBill = savedBillsList.get(curBillNo);
+		Log.e("入库：", curBillNo + "");
+		Intent intent = new Intent(mActivity, LoadingActivity.class);
+		intent.putExtra("loadingType", "instore");
+		intent.putExtra("methodName", "savebill");
+		intent.putExtra("s1", savedBill.getMailNoStr());
+		intent.putExtra("s2", savedBill.getReceiverNameStr());
+		intent.putExtra("s3", savedBill.getCompanyId());
+		intent.putExtra("s4", savedBill.getReceiverMobilephoneStr());
+		intent.putExtra("s5", savedBill.getAdminId());
+		intent.putExtra("s6", savedBill.getCurrentInStoreBillNo());
+		curBillNo++;
+		startActivityForResult(intent, 1);
+	}
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == 1) { // 入库操作
@@ -383,15 +473,37 @@ public class HomeFragment extends Fragment {
 				final String result = data.getStringExtra("Result"); // 接收Intent传递过来的查询结果
 
 				if (result.equals("查询失败") || result.equals("查询为空")) {
-					new AlertDialog.Builder(mActivity).setTitle("入库操作失败")
-							.setMessage("当前网络不给力，入库操作失败，请稍后重试。")
-							.setNeutralButton("确定", null).show();
+					// new AlertDialog.Builder(mActivity).setTitle("入库操作失败")
+					// .setMessage("当前网络不给力，入库操作失败，请稍后重试。")
+					// .setNeutralButton("确定", null).show();
+					Toast.makeText(
+							mActivity,
+							"运单号:"
+									+ savedBillsList.get(curBillNo - 1)
+											.getMailNoStr() + " 入库失败，网络故障!",
+							Toast.LENGTH_SHORT).show();
+					// Log.e("入库result:"+savedBillsList.get(curBillNo).getMailNoStr(),
+					// "查询失败");
 				} else if (result.equals("入库失败")) {
-					new AlertDialog.Builder(mActivity).setTitle("入库失败")
-							.setMessage("入库失败，或当前单号已经入库，请核对单号后重试。")
-							.setNeutralButton("确定", null).show();
+					// new AlertDialog.Builder(mActivity).setTitle("入库失败")
+					// .setMessage("入库失败，或当前单号已经入库，请核对单号后重试。")
+					// .setNeutralButton("确定", null).show();
+					Toast.makeText(
+							mActivity,
+							"运单号:"
+									+ savedBillsList.get(curBillNo - 1)
+											.getMailNoStr() + " 入库失败,已入库！",
+							Toast.LENGTH_SHORT).show();
+					// Log.e("入库result:"+savedBillsList.get(curBillNo).getMailNoStr(),
+					// "入库失败，或当前单号已经入库，请核对单号后重试。");
 				} else {
-					Toast.makeText(mActivity, mailNoStr + " 入库成功！",
+					// Log.e("入库result:"+savedBillsList.get(curBillNo).getMailNoStr(),
+					// "入库成功");
+					Toast.makeText(
+							mActivity,
+							"运单号:"
+									+ savedBillsList.get(curBillNo - 1)
+											.getMailNoStr() + " 入库成功！",
 							Toast.LENGTH_SHORT).show();
 
 					// 入库成功后调用URL
@@ -420,18 +532,20 @@ public class HomeFragment extends Fragment {
 								// httpResult += line;
 								// }
 								// handler.sendEmptyMessage(2);
+
+								// 入库成功并且调用URL无异常后会自动删除该条记录
+								int deleteRes = mysqHelper
+										.delete_one_bill(savedBillsList.get(
+												curBillNo - 1).getMailNoStr());
+								if (deleteRes == -1)
+									Log.e("delete this record:", "failed");
+								else
+									Log.e("delete this record:", "success");
 							} catch (Exception e) {
 								e.printStackTrace();
 								Toast.makeText(mActivity, "HTTP访问异常！",
 										Toast.LENGTH_SHORT).show();
 							}
-							// finally {
-							// try {
-							// bufferedReader.close();
-							// } catch (IOException e) {
-							// e.printStackTrace();
-							// }
-							// }
 						}
 					}.start();
 
@@ -475,6 +589,8 @@ public class HomeFragment extends Fragment {
 					receiverName.setText("");
 					receiverMobilephone.setText("");
 				}
+				if (curBillNo < allBillNum)
+					myBillInStore();
 			}
 		} else if (requestCode == 2) { // 快件查询
 			if (resultCode == Activity.RESULT_OK) {

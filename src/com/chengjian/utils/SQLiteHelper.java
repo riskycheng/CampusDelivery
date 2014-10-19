@@ -110,7 +110,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 	 * function:清空所有的bill记录
 	 */
 	public void clearAllBills() {
-		String SqlStr = "delete * from " + TB_NAME;
+		String SqlStr = "delete from " + TB_NAME;
 		SQLiteDatabase db = this.getWritableDatabase();
 		try {
 			db.execSQL(SqlStr);
