@@ -98,7 +98,7 @@ public class LoadingActivity extends Activity {
 
 	public String callWebService(String methodName, String SQL) {
 		String nameSpace = "http://tempuri.org/";		//命名空间
-		String endPoint = "http://203.195.188.172:8091/PostService.asmx";		//EndPoint
+		String endPoint = "http://203.195.188.172:8090/PostService.asmx";		//EndPoint
 		String soapAction = nameSpace + methodName;		//SOAP Action
 		SoapObject rpc = new SoapObject(nameSpace, methodName);		//指定WebService的命名空间和调用的方法名
 		if(SQL != null) {
@@ -143,7 +143,7 @@ public class LoadingActivity extends Activity {
 
 	public String callWebService2(String methodName) {
 		String nameSpace = "http://tempuri.org/";		//命名空间
-		String endPoint = "http://203.195.188.172:8091/PostService.asmx";	//EndPoint
+		String endPoint = "http://203.195.188.172:8090/PostService.asmx";	//EndPoint
 		String soapAction = nameSpace + methodName;		//SOAP Action
 		SoapObject rpc = new SoapObject(nameSpace, methodName);		//指定WebService的命名空间和调用的方法名
 

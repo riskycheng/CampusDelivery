@@ -24,7 +24,7 @@
             android:text="运单:"
             android:textSize="18sp" />
     </LinearLayout>
-
+<!--  
     <LinearLayout
         android:layout_width="10dip"
         android:layout_height="wrap_content"
@@ -45,5 +45,5 @@
             android:text="收件人姓名"
             android:textSize="18sp" />
     </LinearLayout>
-
+-->
 </LinearLayout>

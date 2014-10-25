@@ -221,6 +221,13 @@ public class LoginActivity extends Activity {
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if(keyCode == KeyEvent.KEYCODE_BACK)
+			finish();
+		return super.onKeyDown(keyCode, event);
+	}
+
 	// private String string2MD5(String string) {
 	// char hexDigits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	// 'a', 'b', 'c', 'd', 'e', 'f' };
@@ -247,4 +254,10 @@ public class LoginActivity extends Activity {
 	// return null;
 	// }
 	// }
+	
+	
+	
+	
+	
+	
 }

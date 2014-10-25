@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.chengjian.vgoo2"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="5"
+    android:versionName="3.2" >
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -30,7 +30,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/campus_ico"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
@@ -54,7 +54,9 @@
             android:name="com.chengjian.utils.LoadingActivity"
             android:theme="@style/MyDialogStyle" >
         </activity>
-        <activity android:name="com.chengjian.vgoo2.FragmentTabActivity" >
+        <activity
+            android:name="com.chengjian.vgoo2.FragmentTabActivity"
+            android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity android:name="com.chengjian.vgoo2.WelcomeActivity" >
         </activity>

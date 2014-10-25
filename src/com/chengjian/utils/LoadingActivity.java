@@ -1,5 +1,14 @@
 package com.chengjian.utils;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.apache.http.HttpConnection;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
@@ -14,10 +23,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Window;
 import android.widget.TextView;
 
@@ -35,7 +47,8 @@ public class LoadingActivity extends Activity {
 	public static final int QUERY_VIA_MOBILE_MSG = 3;
 	public static final int INSTORE_MSG = 4;
 	public static final int SETSMS_MSG = 5;
-    public static int admin_id = 0;
+	public static final int DOWNLOAD_XML_DONE_MSG = 6;
+	public static int admin_id = 0;
 	@SuppressLint("HandlerLeak")
 	Handler handler = new Handler() {
 		@Override
@@ -51,8 +64,18 @@ public class LoadingActivity extends Activity {
 				setResult(RESULT_OK, intent);
 				finish();
 				break;
-			case SETSMS_MSG://处理 设置短信模板功能
+			case SETSMS_MSG:// 处理 设置短信模板功能
 				intent.putExtra("Result", result);
+				setResult(RESULT_OK, intent);
+				finish();
+				break;
+			case DOWNLOAD_XML_DONE_MSG:
+				// 下载完成，去首先解析出版本号
+				String serverVersion = ParsingTool
+						.parsingVerFromXML(ConstantParams.SAVE_APK_OR_XML_PATH
+								+ "androidVer.xml");
+				// 返回版本号
+				intent.putExtra("Result", serverVersion);
 				setResult(RESULT_OK, intent);
 				finish();
 				break;
@@ -91,9 +114,9 @@ public class LoadingActivity extends Activity {
 			textView.setText("正在更新数据...");
 		} else if (loadingType.equals("refresh_spinner")) {
 			textView.setText("获取物流公司...");
-		}  else if (loadingType.equals("add_sms")) {
+		} else if (loadingType.equals("add_sms")) {
 			textView.setText("增加短信模板...");
-		}else if (loadingType.equals("instore")) {
+		} else if (loadingType.equals("instore")) {
 			textView.setText("快件入库...");
 			s1 = intent.getStringExtra("s1");
 			s2 = intent.getStringExtra("s2");
@@ -101,12 +124,14 @@ public class LoadingActivity extends Activity {
 			s4 = intent.getStringExtra("s4");
 			s5 = intent.getStringExtra("s5");
 			s6 = intent.getStringExtra("s6");
+		} else if (loadingType.equals("update")) {
+			textView.setText("检查更新...");
 		}
 		mySharedPreferences = getSharedPreferences("myPreference",
 				Activity.MODE_PRIVATE);
 		editor = mySharedPreferences.edit();
 		admin_id = mySharedPreferences.getInt("admin_id", 0);
-		Log.e("loadingActivity:admin_id:", admin_id+"");
+		Log.e("loadingActivity:admin_id:", admin_id + "");
 		new Thread() {
 			@Override
 			public void run() {
@@ -141,22 +166,28 @@ public class LoadingActivity extends Activity {
 					result = callWebService_QueryBillViaMobile(methodName,
 							Mobile);
 					handler.sendEmptyMessage(QUERY_VIA_MOBILE_MSG);
-				}else if (loadingType.equals("add_sms")) {
+				} else if (loadingType.equals("add_sms")) {
 					// 获取查询的SQL语句
-					final String smsContent = intent.getStringExtra("smsContent");
-					final int account = intent.getIntExtra("account",0);
+					final String smsContent = intent
+							.getStringExtra("smsContent");
+					final int account = intent.getIntExtra("account", 0);
 					result = String.valueOf(callWebService_SetSMS(methodName,
-							smsContent,String.valueOf(account)));
+							smsContent, String.valueOf(account)));
 					handler.sendEmptyMessage(SETSMS_MSG);
+				} else if (loadingType.equals("update")) {
+					// 首先调用下载
+					downloadXML();
+     				handler.sendEmptyMessage(DOWNLOAD_XML_DONE_MSG);
 				}
 
 			}
 		}.start();
+		
 	}
 
 	public String callWebService_Test_HelloWorld(String methodName) {
 		String nameSpace = "http://tempuri.org/"; // 命名空间
-		String endPoint = "http://203.195.188.172:8091/PostService.asmx"; // EndPoint
+		String endPoint = "http://203.195.188.172:8090/PostService.asmx"; // EndPoint
 		String soapAction = nameSpace + methodName; // SOAP Action
 		SoapObject rpc = new SoapObject(nameSpace, methodName); // 指定WebService的命名空间和调用的方法名
 		// soap Header
@@ -210,7 +241,7 @@ public class LoadingActivity extends Activity {
 			String UserPassword) {
 		String result = null;
 		String nameSpace = "http://tempuri.org/"; // 命名空间
-		String endPoint = "http://118.123.22.62:8090/PostService.asmx"; // EndPoint
+		String endPoint = "http://203.195.188.172:8090/PostService.asmx"; // EndPoint
 		String soapAction = nameSpace + methodName; // SOAP Action
 		SoapObject rpc = new SoapObject(nameSpace, methodName); // 指定WebService的命名空间和调用的方法名
 		if (UserName != null && UserPassword != null) {
@@ -256,7 +287,7 @@ public class LoadingActivity extends Activity {
 
 	public String callWebService(String methodName, String SQL) {
 		String nameSpace = "http://tempuri.org/"; // 命名空间
-		String endPoint = "http://203.195.188.172:8091/PostService.asmx"; // EndPoint
+		String endPoint = "http://203.195.188.172:8090/PostService.asmx"; // EndPoint
 		String soapAction = nameSpace + methodName; // SOAP Action
 		SoapObject rpc = new SoapObject(nameSpace, methodName); // 指定WebService的命名空间和调用的方法名
 		if (SQL != null) {
@@ -310,7 +341,7 @@ public class LoadingActivity extends Activity {
 			String BillNo) {
 		String result = null;
 		String nameSpace = "http://tempuri.org/"; // 命名空间
-		String endPoint = "http://118.123.22.62:8090/PostService.asmx"; // EndPoint
+		String endPoint = "http://203.195.188.172:8090/PostService.asmx"; // EndPoint
 		String soapAction = nameSpace + methodName; // SOAP Action
 		SoapObject rpc = new SoapObject(nameSpace, methodName); // 指定WebService的命名空间和调用的方法名
 		if (BillNo != null) {
@@ -357,8 +388,10 @@ public class LoadingActivity extends Activity {
 	/**
 	 * function:根据手机号查询
 	 * 
-	 * @param methodName 方法名
-	 * @param Mobile 手机号
+	 * @param methodName
+	 *            方法名
+	 * @param Mobile
+	 *            手机号
 	 * @return 返回json结果
 	 * @author chengjian
 	 */
@@ -366,14 +399,14 @@ public class LoadingActivity extends Activity {
 			String Mobile) {
 		String result = null;
 		String nameSpace = "http://tempuri.org/"; // 命名空间
-		String endPoint = "http://118.123.22.62:8090/PostService.asmx"; // EndPoint
+		String endPoint = "http://203.195.188.172:8090/PostService.asmx"; // EndPoint
 		String soapAction = nameSpace + methodName; // SOAP Action
 		SoapObject rpc = new SoapObject(nameSpace, methodName); // 指定WebService的命名空间和调用的方法名
 		if (Mobile != null) {
 			// WebService接口的参数
 			rpc.addProperty("bill_no", "");
 			rpc.addProperty("mobile", Mobile);
-			rpc.addProperty("account",admin_id);
+			rpc.addProperty("account", admin_id);
 		}
 
 		// soap Header
@@ -412,7 +445,7 @@ public class LoadingActivity extends Activity {
 
 	public String callWebService2(String methodName) {
 		String nameSpace = "http://tempuri.org/"; // 命名空间
-		String endPoint = "http://118.123.22.62:8090/PostService.asmx"; // EndPoint
+		String endPoint = "http://203.195.188.172:8090/PostService.asmx"; // EndPoint
 		String soapAction = nameSpace + methodName; // SOAP Action
 		SoapObject rpc = new SoapObject(nameSpace, methodName); // 指定WebService的命名空间和调用的方法名
 
@@ -453,6 +486,7 @@ public class LoadingActivity extends Activity {
 			object = (SoapObject) envelope.bodyIn;
 		} catch (Exception e) {
 			e.printStackTrace();
+			Log.e("入库失败：", e.getMessage());
 			return "入库失败";
 		}
 		// SoapObject object = null;
@@ -483,17 +517,20 @@ public class LoadingActivity extends Activity {
 
 	/**
 	 * function:设置短信模板
-	 * @param methodName 方法名
-	 * @param account 当前帐号
+	 * 
+	 * @param methodName
+	 *            方法名
+	 * @param account
+	 *            当前帐号
 	 * @author chengjian
-	 * @return 返回值 0：增加失败  >0 增加成功
+	 * @return 返回值 0：增加失败 >0 增加成功
 	 */
 	public int callWebService_SetSMS(String methodName, String smsContent,
 			String account) {
 
 		int result = 0;
 		String nameSpace = "http://tempuri.org/"; // 命名空间
-		String endPoint = "http://118.123.22.62:8090/PostService.asmx"; // EndPoint
+		String endPoint = "http://203.195.188.172:8090/PostService.asmx"; // EndPoint
 		String soapAction = nameSpace + methodName; // SOAP Action
 		SoapObject rpc = new SoapObject(nameSpace, methodName); // 指定WebService的命名空间和调用的方法名
 		if (smsContent != null) {
@@ -533,4 +570,124 @@ public class LoadingActivity extends Activity {
 		return result;
 	}
 
+	/**
+	 * function:下载XML文件
+	 */
+	public void downloadXML() {
+		String path = ConstantParams.GET_XML_PATH;
+		String savedPath = Environment.getExternalStorageDirectory().toString() + "/vgoo2/";
+		//String savedPath = ConstantParams.SAVE_APK_OR_XML_PATH;
+		File filePath = new File(savedPath);
+		if(!filePath.exists())
+			filePath.mkdir();
+		//从服务器上下载XML
+	
+		try {
+			URL url = new URL(path);
+			HttpURLConnection conn = (HttpURLConnection) url
+					.openConnection();
+			conn.connect();
+			int length = conn.getContentLength();
+			InputStream is = conn.getInputStream();
+
+			File file = new File(savedPath);
+			if (!file.exists()) {
+				file.mkdir();
+			}
+			//String apkFile = saveFileName;
+			String xmlName = "androidVer.xml";
+			File xmlFile = new File(savedPath + xmlName);
+			FileOutputStream fos = new FileOutputStream(xmlFile);
+
+			int count = 0;
+			byte buf[] = new byte[1024];
+
+			do {
+				int numread = is.read(buf);
+				count += numread;
+				int progress = (int) (((float) count / length) * 100);
+				Log.e("progress:", progress+"");
+				// 更新进度
+//				mHandler.sendEmptyMessage(DOWN_UPDATE);
+				if (numread <= 0) {
+					// 下载完成通知安装
+					handler.sendEmptyMessage(DOWNLOAD_XML_DONE_MSG);
+					break;
+				}
+				fos.write(buf, 0, numread);
+			} while (true);
+
+			fos.close();
+			is.close();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private Runnable mdownApkRunnable = new Runnable() {
+		@Override
+		public void run() {
+			String path = ConstantParams.GET_XML_PATH;
+			String savedPath = Environment.getExternalStorageDirectory().toString() + "/vgoo2/";
+			Log.e("savedPath:", savedPath);
+//			String savedPath = ConstantParams.SAVE_APK_OR_XML_PATH;
+			File filePath = new File(savedPath);
+			if(!filePath.exists())
+				filePath.mkdir();
+			//从服务器上下载XML
+		
+			try {
+				URL url = new URL(path);
+				HttpURLConnection conn = (HttpURLConnection) url
+						.openConnection();
+				conn.connect();
+				int length = conn.getContentLength();
+				InputStream is = conn.getInputStream();
+
+				File file = new File(savedPath);
+				if (!file.exists()) {
+					file.mkdir();
+				}
+				//String apkFile = saveFileName;
+				String xmlName = "androidVer.xml";
+				File xmlFile = new File(xmlName);
+				FileOutputStream fos = new FileOutputStream(xmlFile);
+
+				int count = 0;
+				byte buf[] = new byte[1024];
+
+				do {
+					int numread = is.read(buf);
+					count += numread;
+					int progress = (int) (((float) count / length) * 100);
+					Log.e("progress:", progress+"");
+					// 更新进度
+//					mHandler.sendEmptyMessage(DOWN_UPDATE);
+					if (numread <= 0) {
+						// 下载完成通知安装
+						handler.sendEmptyMessage(DOWNLOAD_XML_DONE_MSG);
+						break;
+					}
+					fos.write(buf, 0, numread);
+				} while (true);
+
+				fos.close();
+				is.close();
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}	
+			
+		}
+	};
+
+
+	
+	
+	
+	
+	
 }

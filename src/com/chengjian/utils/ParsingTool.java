@@ -1,13 +1,20 @@
 package com.chengjian.utils;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import android.util.Log;
 
@@ -99,4 +106,44 @@ public class ParsingTool {
 		return savedBill;
 	}
 
+	/**
+	 * function:从XML文件中解析出 版本号
+	 * 
+	 * @param path
+	 *            输入XML文件路径
+	 * @return 输出解析出的版本号， 如果为0，表示获取失败
+	 */
+	public static String parsingVerFromXML(String path) {
+		String version = "";
+		File file = new File(path);
+		if (!file.exists() || !file.isFile())
+			return version;
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder;
+		try {
+			builder = dbf.newDocumentBuilder();
+			Document doc = builder.parse(file); // 获取到xml文件
+			// 下面开始读取
+			Element root = doc.getDocumentElement(); // 获取根元素
+			NodeList versionRoot = root.getElementsByTagName("android_ver");
+			version = versionRoot.item(0).getTextContent();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return version;
+	}
+
+	
+	/**
+	 * function:转化为手机号码显示方式：中间四位为*
+	 * @author chengjian
+	 */
+	public static String convert2PhoneDisplay(String phone){
+		String tempA = phone.substring(0, 3);
+		String tempB = "****";
+		String tempC = phone.substring(7);
+		return tempA + tempB + tempC;
+	}
+	
 }

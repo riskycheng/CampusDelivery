@@ -1,17 +1,26 @@
 package com.chengjian.vgoo2;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+
+import zhang.fan.vgoo2.idata.LoadingIIActivity;
+
 import com.chengjian.entity.Express;
 import com.chengjian.utils.ConstantParams;
 import com.chengjian.utils.LoadingActivity;
 import com.chengjian.utils.ParsingTool;
 import com.chengjian.vgoo2.R;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,12 +40,12 @@ import android.widget.Toast;
 public class QueryAFragment extends Fragment {
 
 	private Activity mActivity;
-	private EditText EditText_yundanhao;
+	public static EditText EditText_yundanhao;
 	private TextView TextView_DeliveryName;
 	private TextView TextView_RecName;
 	private TextView TextView_Status;
 	private TextView TextView_Mobile;
-	private Button Button_submit;
+	public static Button Button_submit;
 	private Button Button_query;
 	private Button Button_clear;
 	public String mailNoStr;
@@ -44,6 +53,7 @@ public class QueryAFragment extends Fragment {
 	public static int cur_id = 0;
 	public static String cur_bill_no = "";
 	public static boolean isExist = false;
+	public static String local_str = "";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -90,6 +100,120 @@ public class QueryAFragment extends Fragment {
 
 		Button_clear = (Button) view.findViewById(R.id.Btn_clear);
 		Button_clear.setOnClickListener(new myClickListener());
+
+		EditText_yundanhao.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				LayoutInflater inflater = (LayoutInflater) mActivity
+						.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+				final View view = inflater.inflate(R.layout.edittext, null);
+				new AlertDialog.Builder(mActivity)
+						.setTitle("手动输入运单号：")
+						.setView(view)
+						.setNegativeButton("取消", null)
+						.setPositiveButton("确定",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										EditText mailNoEditText = (EditText) view
+												.findViewById(R.id.mail_no_edittext);
+										mailNoStr = mailNoEditText.getText()
+												.toString().trim();
+										local_str = mailNoStr;
+										// mailNoStr =
+										// EditText_yundanhao.getText().toString().trim();
+										if (!mailNoStr.equals("")) {
+											if (isLetterOrDigit(mailNoStr)) {
+												// 手动输入完毕直接查询快件
+												Intent intent = new Intent(
+														mActivity,
+														LoadingActivity.class);
+												intent.putExtra("loadingType",
+														"query_via_billno");
+												intent.putExtra("methodName",
+														"querybill");
+												intent.putExtra("billNo",
+														mailNoStr);
+												// intent.putExtra("account",
+												// admin)
+												startActivityForResult(
+														intent,
+														ConstantParams.QUERY_VIA_BILLNO);
+
+											} else {
+												Toast.makeText(mActivity,
+														"运单号只能包含字母或数字，请重新输入！",
+														Toast.LENGTH_SHORT)
+														.show();
+											}
+										} else {
+											Toast.makeText(mActivity,
+													"输入不能为空!",
+													Toast.LENGTH_SHORT).show();
+										}
+										EditText_yundanhao.setText(mailNoStr);
+									}
+								}).show();
+			}
+		});
+		
+		
+		EditText_yundanhao.addTextChangedListener(new TextWatcher() {
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+				// TODO Auto-generated method stub
+//				local_str = EditText_yundanhao.getText().toString().trim();
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				// 值发生变化后直接查询
+				mailNoStr = EditText_yundanhao.getText().toString().trim();
+				String temp = mailNoStr;
+				if (temp.equals(local_str) || temp.equals(""))
+					return;
+				if (!temp.equals("")) {
+					if (isLetterOrDigit(temp)) {
+						Intent intent = new Intent(mActivity,
+								LoadingActivity.class);
+						intent.putExtra("loadingType", "query_via_billno");
+						intent.putExtra("methodName", "querybill");
+						intent.putExtra("billNo", temp);
+						// intent.putExtra("account", admin)
+						startActivityForResult(intent,
+								ConstantParams.QUERY_VIA_BILLNO);
+
+					} else {
+						Toast.makeText(mActivity, "运单号只能包含字母或数字，请重新输入！",
+								Toast.LENGTH_SHORT).show();
+					}
+				} else {
+					Toast.makeText(mActivity, "输入不能为空!", Toast.LENGTH_SHORT)
+							.show();
+				}
+
+			}
+		});
+		
+		
+		//初始化控件值
+		EditText_yundanhao.setText("");
+		TextView_DeliveryName.setText("无");
+		TextView_RecName.setText("无");
+		TextView_Mobile.setText("无");
+		TextView_Status.setText("无");
 	}
 
 	/**
@@ -127,8 +251,10 @@ public class QueryAFragment extends Fragment {
 			 * break;
 			 */
 			case R.id.Button_submit:
-				if(!isExist){
-					Toast.makeText(mActivity, "无法重发：当前信息不存在，请先入库!", Toast.LENGTH_SHORT).show();
+				if (!isExist) {
+					Toast.makeText(mActivity, "无法重发：当前信息不存在，请先入库!",
+							Toast.LENGTH_SHORT).show();
+					Button_clear.performClick();
 					break;
 				}
 				// 获得当前快递的id
@@ -140,7 +266,7 @@ public class QueryAFragment extends Fragment {
 					@Override
 					public void run() {
 						try {
-							String urlTemp = "http://e-zhaosheng.com/vgoo/syn_fwz.php?act=syn_send&bill_id="
+							String urlTemp = "http://www.v-goo.com/syn_fwz.php?act=syn_send&bill_id="
 									+ cur_id + "&is_forced=1";
 							URL url = new URL(urlTemp);
 							HttpURLConnection conn = (HttpURLConnection) url
@@ -150,6 +276,15 @@ public class QueryAFragment extends Fragment {
 							conn.setRequestProperty("user-agent",
 									"Mozilla/4.0(compatible; MSIE 6.0; Windows NT 5.1; SV1)");
 							conn.connect();
+							BufferedReader bufferedReader = new BufferedReader(
+									new InputStreamReader(conn.getInputStream()));
+							String line = "";
+							String httpResult = "";
+							while ((line = bufferedReader.readLine()) != null) {
+								httpResult += line;
+							}
+							Log.e("Resend_httpResult:", httpResult);
+
 						} catch (Exception e) {
 							e.printStackTrace();
 							Toast.makeText(mActivity, "HTTP访问异常！",
@@ -164,32 +299,66 @@ public class QueryAFragment extends Fragment {
 						// }
 					}
 				}.start();
-				Toast.makeText(mActivity, "bill_no:" + cur_bill_no + " 短信重发成功!" , Toast.LENGTH_SHORT).show();
+				Toast.makeText(mActivity,
+						"bill_no:" + cur_bill_no + " 短信重发成功!",
+						Toast.LENGTH_SHORT).show();
+				Button_clear.performClick();
 				break;
 
 			case R.id.Btn_queryTabA:
 
-				mailNoStr = EditText_yundanhao.getText().toString().trim();
-				if (!mailNoStr.equals("")) {
-					if (isLetterOrDigit(mailNoStr)) {
-						// 手动输入完毕直接查询快件
-						Intent intent = new Intent(mActivity,
-								LoadingActivity.class);
-						intent.putExtra("loadingType", "query_via_billno");
-						intent.putExtra("methodName", "querybill");
-						intent.putExtra("billNo", mailNoStr);
-						//intent.putExtra("account", admin)
-						startActivityForResult(intent,
-								ConstantParams.QUERY_VIA_BILLNO);
+				LayoutInflater inflater = (LayoutInflater) mActivity
+						.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+				final View view = inflater.inflate(R.layout.edittext, null);
+				new AlertDialog.Builder(mActivity)
+						.setTitle("手动输入运单号：")
+						.setView(view)
+						.setNegativeButton("取消", null)
+						.setPositiveButton("确定",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										EditText mailNoEditText = (EditText) view
+												.findViewById(R.id.mail_no_edittext);
+										mailNoStr = mailNoEditText.getText()
+												.toString().trim();
+										local_str = mailNoStr;
+										// mailNoStr =
+										// EditText_yundanhao.getText().toString().trim();
+										if (!mailNoStr.equals("")) {
+											if (isLetterOrDigit(mailNoStr)) {
+												// 手动输入完毕直接查询快件
+												Intent intent = new Intent(
+														mActivity,
+														LoadingActivity.class);
+												intent.putExtra("loadingType",
+														"query_via_billno");
+												intent.putExtra("methodName",
+														"querybill");
+												intent.putExtra("billNo",
+														mailNoStr);
+												// intent.putExtra("account",
+												// admin)
+												startActivityForResult(
+														intent,
+														ConstantParams.QUERY_VIA_BILLNO);
 
-					} else {
-						Toast.makeText(mActivity, "运单号只能包含字母或数字，请重新输入！",
-								Toast.LENGTH_SHORT).show();
-					}
-				} else {
-					Toast.makeText(mActivity, "输入不能为空!", Toast.LENGTH_SHORT)
-							.show();
-				}
+											} else {
+												Toast.makeText(mActivity,
+														"运单号只能包含字母或数字，请重新输入！",
+														Toast.LENGTH_SHORT)
+														.show();
+											}
+										} else {
+											Toast.makeText(mActivity,
+													"输入不能为空!",
+													Toast.LENGTH_SHORT).show();
+										}
+										EditText_yundanhao.setText(mailNoStr);
+									}
+								}).show();
+
 				break;
 
 			case R.id.Btn_clear:
@@ -235,11 +404,11 @@ public class QueryAFragment extends Fragment {
 					TextView_RecName.setText("无");
 					TextView_Status.setText("无");
 					TextView_Mobile.setText("无");
-					//并将重发短信按钮设置为disable
+					// 并将重发短信按钮设置为disable
 					isExist = false;
 					return;
 				}
-				//有结果则将按钮置为enable
+				// 有结果则将按钮置为enable
 				isExist = true;
 				// 转成Json
 				try {
@@ -255,7 +424,12 @@ public class QueryAFragment extends Fragment {
 					cur_id = express.getId();
 					cur_bill_no = express.getBill_no();
 					TextView_Status.setText(express.getBill_status());
-					TextView_Mobile.setText(express.getMobile());
+					String temp = express.getMobile();
+					if (temp.startsWith("1") && temp.length() == 11)
+						TextView_Mobile.setText(ParsingTool
+								.convert2PhoneDisplay(temp));
+					else
+						TextView_Mobile.setText(temp + "(测试数据)");
 					TextView_DeliveryName.setText(express.getName());
 					TextView_RecName.setText(express.getRec_name());
 				} catch (Exception e) {

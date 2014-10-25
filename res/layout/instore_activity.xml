@@ -103,8 +103,7 @@
                     android:id="@+id/receiver_mobilephone"
                     android:layout_width="200sp"
                     android:layout_height="wrap_content"
-                    android:editable="true"
-                    android:inputType="number"
+                    android:editable="false"
                     android:singleLine="true" />
             </TableRow>
         </TableLayout>

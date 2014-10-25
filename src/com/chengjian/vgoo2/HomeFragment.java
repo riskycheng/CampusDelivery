@@ -1,5 +1,7 @@
 package com.chengjian.vgoo2;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -14,15 +16,16 @@ import org.json.JSONObject;
 
 import zhang.fan.vgoo2.idata.CornerListView;
 import zhang.fan.vgoo2.idata.HadwareControll;
-import zhang.fan.vgoo2.idata.LoadingActivity;
 import zhang.fan.vgoo2.idata.LoadingIIActivity;
 
 import com.chengjian.entity.SavedBill;
+import com.chengjian.utils.LoadingActivity;
 import com.chengjian.utils.ParsingTool;
 import com.chengjian.utils.SQLiteHelper;
 import com.chengjian.vgoo2.R;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,11 +34,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
@@ -52,9 +60,11 @@ import android.widget.AdapterView.OnItemSelectedListener;
 
 public class HomeFragment extends Fragment {
 	private CornerListView mListView = null;
-	private EditText mailNo, receiverName, receiverMobilephone = null;
+	public static EditText mailNo;
+	private EditText receiverName, receiverMobilephone = null;
 	private Spinner companySpinner = null;
-	private Button manualInput, replace, inStore, inStoreAdd = null;
+	private Button manualInput, replace, inStore = null;
+	public static Button inStoreAdd = null;
 	private String mailNoStr = "";
 	private Activity mActivity;
 	int adminId = 0; // 管理员ID
@@ -62,13 +72,14 @@ public class HomeFragment extends Fragment {
 	String login_time = ""; // 当天登录时间
 	int instoreBills = 0; // 已入库计数
 	// String inStoreBillNo = ""; //快件入库编号
-
-	public Handler mHandler = new MainHandler();
+	public static Context context;
+	// public Handler mHandler = new MainHandler();
 	protected MediaPlayer mediaPlayer = null;
 	boolean press = true;
 
 	SharedPreferences mySharedPreferences;
 	SharedPreferences.Editor editor;
+	
 
 	// 定义数据库读写对象
 	SQLiteHelper mysqHelper;
@@ -85,15 +96,18 @@ public class HomeFragment extends Fragment {
 	// 用于指示当前总记录数目 和当前位置
 	public static int allBillNum = 0;
 	public static int curBillNo = 0;
+	public static String before_str_mailNo = "";
+	public static String local_str = "";
 
+	public static String cur_phoneNumDataString = "";
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// getActivity().requestWindowFeature(Window.FEATURE_NO_TITLE); //设置无标题
 		// getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 		// WindowManager.LayoutParams.FLAG_FULLSCREEN); //设置全屏
-		HadwareControll.Open(); // 打开设备
-		HadwareControll.m_handler = mHandler;
+		// HadwareControll.Open(); // 打开设备
+		// HadwareControll.m_handler = mHandler;
 		mActivity = getActivity();
 	}
 
@@ -107,6 +121,7 @@ public class HomeFragment extends Fragment {
 		return view;
 	}
 
+
 	public void init(View view) {
 		mySharedPreferences = mActivity.getSharedPreferences("myPreference",
 				Activity.MODE_PRIVATE);
@@ -115,10 +130,168 @@ public class HomeFragment extends Fragment {
 		mysqHelper = new SQLiteHelper(mActivity);
 		savedBillsList = new ArrayList<SavedBill>();
 		mailNo = (EditText) view.findViewById(R.id.mail_no);
+		mailNo.requestFocus();
+		
+		mailNo.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				LayoutInflater inflater = (LayoutInflater) mActivity
+						.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+				final View view = inflater.inflate(R.layout.edittext, null);
+				final EditText mailNoEditText = (EditText) view
+						.findViewById(R.id.mail_no_edittext);
+				
+//				//不调用软键盘
+//				mailNoEditText.setOnTouchListener(new OnTouchListener(){
+//			          
+//
+//						@Override
+//						public boolean onTouch(View v, MotionEvent event) {
+//							 int inType = mailNoEditText.getInputType(); // backup the input type  
+//							 mailNoEditText.setInputType(InputType.TYPE_NULL); // disable soft input      
+//							 mailNoEditText.onTouchEvent(event); // call native handler      
+//							 mailNoEditText.setInputType(inType); // restore input type     
+//							 mailNoEditText.setSelection(mailNoEditText.getText().length());  
+//				                return true;  
+//						}            
+//			        });
+//				
+				
+				
+				new AlertDialog.Builder(mActivity)
+						.setTitle("手动输入运单号：")
+						.setView(view)
+						.setNegativeButton("取消", null)
+						.setPositiveButton("确定",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										
+										mailNoStr = mailNoEditText.getText()
+												.toString().trim();
+										before_str_mailNo = mailNoStr;
+										if (!mailNoStr.equals("")) {
+											if (isLetterOrDigit(mailNoStr)) {
+												mailNo.setText(mailNoStr);
+//												local_str = mailNoStr;
+												// 手动输入完毕直接查询快件
+												Intent intent = new Intent(
+														mActivity,
+														LoadingIIActivity.class);
+												intent.putExtra("mailNo",
+														mailNoStr);
+												startActivityForResult(intent,
+														2);
+											} else {
+												Toast.makeText(mActivity,
+														"运单号只能包含字母或数字，请重新输入！",
+														Toast.LENGTH_SHORT)
+														.show();
+											}
+										} else {
+											mailNo.setText(mailNoStr);
+										}
+									}
+								}).show();
+			}
+		});
+		
+		// 设置值变化时候触发
+		mailNo.addTextChangedListener(new TextWatcher() {
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+				local_str = mailNo.getText().toString().trim();
+				Log.e("localStr:", local_str);
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				// 扫描完毕直接查询快件
+				mailNoStr = mailNo.getText().toString().trim();
+				if (mailNoStr.equals(local_str) || mailNoStr.equals(""))
+					return;
+				Log.e("here", "call textChanged!");
+				if (!mailNoStr.equals("") && isLetterOrDigit(mailNoStr)) {
+					Intent intent = new Intent(mActivity,
+							LoadingIIActivity.class);
+					intent.putExtra("mailNo", mailNoStr);
+					startActivityForResult(intent, 2);
+				} else {
+					Toast.makeText(mActivity, "运单号有误，请重新扫描！",
+							Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
+
 		companySpinner = (Spinner) view.findViewById(R.id.company_spinner);
 		receiverName = (EditText) view.findViewById(R.id.receiver_name);
 		receiverMobilephone = (EditText) view
 				.findViewById(R.id.receiver_mobilephone);
+		//设置点击的动作，即触发修改的对话框
+		receiverMobilephone.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				LayoutInflater inflater = (LayoutInflater) mActivity
+						.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+				final View view = inflater.inflate(R.layout.edittext, null);
+				final EditText mailNoEditText = (EditText) view
+						.findViewById(R.id.mail_no_edittext);
+				
+				//不调用软键盘
+				mailNoEditText.setOnTouchListener(new OnTouchListener(){
+			          
+
+						@Override
+						public boolean onTouch(View v, MotionEvent event) {
+							 int inType = mailNoEditText.getInputType(); // backup the input type  
+							 mailNoEditText.setInputType(InputType.TYPE_CLASS_PHONE); // disable soft input      
+							 mailNoEditText.onTouchEvent(event); // call native handler      
+							 mailNoEditText.setInputType(inType); // restore input type     
+							 mailNoEditText.setSelection(mailNoEditText.getText().length());  
+				                return true;  
+						}            
+			        });
+				
+				
+				new AlertDialog.Builder(mActivity)
+						.setTitle("修改手机号码：")
+						.setView(view)
+						.setNegativeButton("取消", null)
+						.setPositiveButton("确定",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										
+										//将输入的值写入当前全局变量
+										String temp = mailNoEditText.getText().toString().trim();
+										//判断是否符合手机号
+										if(temp.startsWith("1") && temp.length() == 11){
+											cur_phoneNumDataString = temp;
+											receiverMobilephone.setText(cur_phoneNumDataString);
+										}else{
+											Toast.makeText(mActivity, "请输入正确的手机号!", Toast.LENGTH_SHORT).show();
+											Log.e("update phone number", "failed");
+										}
+											
+									}
+								}).show();
+				
+			}
+		});
 		manualInput = (Button) view.findViewById(R.id.manual_input);
 		replace = (Button) view.findViewById(R.id.replace);
 		inStore = (Button) view.findViewById(R.id.in_store);
@@ -133,7 +306,7 @@ public class HomeFragment extends Fragment {
 				String s1 = mailNoStr;
 				String s2 = receiverName.getText().toString().trim();
 				String s3 = String.valueOf(companyId);
-				String s4 = receiverMobilephone.getText().toString().trim();
+				String s4 = cur_phoneNumDataString;
 				String s5 = String.valueOf(adminId);
 				String s6 = mySharedPreferences.getString(
 						"current_instore_bill_no", "");
@@ -161,6 +334,8 @@ public class HomeFragment extends Fragment {
 					} else {
 						Toast.makeText(mActivity, "保存成功！", Toast.LENGTH_SHORT)
 								.show();
+						replace.performClick();
+						receiverMobilephone.requestFocus();
 					}
 				}
 				// Log.e("listsLength:", savedBillsList.size() + "");
@@ -176,13 +351,13 @@ public class HomeFragment extends Fragment {
 				"current_instore_bill_no", "");
 
 		arrayList = new ArrayList<HashMap<String, String>>();
-//		map1 = new HashMap<String, String>();
+		// map1 = new HashMap<String, String>();
 		map2 = new HashMap<String, String>();
 		map3 = new HashMap<String, String>();
 		map4 = new HashMap<String, String>();
 
-//		map1.put("item", "登录时间");
-//		map1.put("item_content", login_time);
+		// map1.put("item", "登录时间");
+		// map1.put("item_content", login_time);
 		map2.put("item", "已入库");
 		map2.put("item_content", instoreBills + " 件");
 		map3.put("item", "上一次入库编号");
@@ -190,7 +365,7 @@ public class HomeFragment extends Fragment {
 		map4.put("item", "当前入库编号");
 		map4.put("item_content", currentInStoreBillNo);
 
-//		arrayList.add(map1);
+		// arrayList.add(map1);
 		arrayList.add(map2);
 		arrayList.add(map3);
 		arrayList.add(map4);
@@ -307,9 +482,11 @@ public class HomeFragment extends Fragment {
 												.findViewById(R.id.mail_no_edittext);
 										mailNoStr = mailNoEditText.getText()
 												.toString().trim();
+										before_str_mailNo = mailNoStr;
 										if (!mailNoStr.equals("")) {
 											if (isLetterOrDigit(mailNoStr)) {
 												mailNo.setText(mailNoStr);
+//												local_str = mailNoStr;
 												// 手动输入完毕直接查询快件
 												Intent intent = new Intent(
 														mActivity,
@@ -336,8 +513,8 @@ public class HomeFragment extends Fragment {
 			@Override
 			public void onClick(View arg0) {
 				mailNo.setText("");
-				companySpinner.setSelection(0);
-				companyId = -1;
+				//companySpinner.setSelection(0);
+				//companyId = -1;
 				receiverName.setText("");
 				receiverMobilephone.setText("");
 			}
@@ -374,16 +551,15 @@ public class HomeFragment extends Fragment {
 				for (SavedBill savedBill : savedBillsList) {
 					Map<String, Object> map = new HashMap<String, Object>();
 					map.put("mailNo", savedBill.getMailNoStr());
-					map.put("receiver", savedBill.getReceiverNameStr());
+					// map.put("receiver", savedBill.getReceiverNameStr());
 					listData.add(map);
 				}
 
 				// 将其转化为adapter
 				SimpleAdapter adapter = new SimpleAdapter(mActivity, listData,
 						R.layout.all_bill_checkout_details_layout,
-						new String[] { "mailNo", "receiver" }, new int[] {
-								R.id.textView_mailNo,
-								R.id.textView_receiverName });
+						new String[] { "mailNo" },
+						new int[] { R.id.textView_mailNo, });
 				allBillsListview.setAdapter(adapter);
 				// 显示总条数
 				TextView allNum = (TextView) view
@@ -409,12 +585,19 @@ public class HomeFragment extends Fragment {
 				return true;
 			}
 		});
+		
+		//将控件值置空
+		mailNo.setText("");
+		receiverName.setText("");
+		receiverMobilephone.setText("");
+		companySpinner.setSelection(-1);
+		
+		
 	}
 
 	private void billInStore() {
 		String receiverNameStr = receiverName.getText().toString().trim();
-		String receiverMobilephoneStr = receiverMobilephone.getText()
-				.toString().trim();
+		String receiverMobilephoneStr = cur_phoneNumDataString;
 		if (mailNo.equals("") || receiverNameStr.equals("")
 				|| receiverMobilephoneStr.equals("")) {
 			Toast.makeText(mActivity, "保存失败:请填写完整的运单信息！", Toast.LENGTH_SHORT)
@@ -512,7 +695,7 @@ public class HomeFragment extends Fragment {
 						public void run() {
 							try {
 								URL url = new URL(
-										"http://e-zhaosheng.com/vgoo/syn_fwz.php?act=syn_fwz&bill_id="
+										"http://www.v-goo.com/syn_fwz.php?act=syn_fwz&bill_id="
 												+ result);
 								HttpURLConnection conn = (HttpURLConnection) url
 										.openConnection();
@@ -522,15 +705,16 @@ public class HomeFragment extends Fragment {
 								conn.setRequestProperty("user-agent",
 										"Mozilla/4.0(compatible; MSIE 6.0; Windows NT 5.1; SV1)");
 								conn.connect();
-								// BufferedReader bufferedReader = new
-								// BufferedReader(new
-								// InputStreamReader(conn.getInputStream()));
-								// String line = "";
-								// String httpResult = "";
-								// while((line = bufferedReader.readLine()) !=
-								// null) {
-								// httpResult += line;
-								// }
+								 BufferedReader bufferedReader = new
+								 BufferedReader(new
+								 InputStreamReader(conn.getInputStream()));
+								 String line = "";
+								 String httpResult = "";
+								 while((line = bufferedReader.readLine()) !=
+								 null) {
+								 httpResult += line;
+								 }
+								 Log.e("HomeFrag_httpResult:", httpResult);
 								// handler.sendEmptyMessage(2);
 
 								// 入库成功并且调用URL无异常后会自动删除该条记录
@@ -555,8 +739,8 @@ public class HomeFragment extends Fragment {
 							"serial_number", 1);
 
 					arrayList.clear();
-					map1.put("item", "登录时间");
-					map1.put("item_content", login_time);
+//					map1.put("item", "登录时间");
+//					map1.put("item_content", login_time);
 					instoreBills++;
 					map2.put("item", "已入库");
 					map2.put("item_content", instoreBills + " 件");
@@ -570,7 +754,7 @@ public class HomeFragment extends Fragment {
 					map4.put("item", "当前入库编号");
 					map4.put("item_content", currentInStoreBillNo);
 
-					arrayList.add(map1);
+//					arrayList.add(map1);
 					arrayList.add(map2);
 					arrayList.add(map3);
 					arrayList.add(map4);
@@ -595,6 +779,7 @@ public class HomeFragment extends Fragment {
 		} else if (requestCode == 2) { // 快件查询
 			if (resultCode == Activity.RESULT_OK) {
 				mailNo.setText(mailNoStr);
+//				local_str = mailNoStr;
 				String httpResult = data.getStringExtra("Result"); // 接收Intent传递过来的查询结果
 				Log.e("Home：快件查询：", httpResult);
 				try {
@@ -602,7 +787,9 @@ public class HomeFragment extends Fragment {
 					companyId = result.getInt("companyId");
 					String receiverNameStr = result.getString("recName");
 					String receiverMobilephoneStr = result.getString("mobile");
-
+					
+					cur_phoneNumDataString = receiverMobilephoneStr;
+					
 					if (companyId == -1) { // 获取上一次的快递公司
 						companyId = mySharedPreferences.getInt(
 								"prev_company_id", -1);
@@ -611,7 +798,11 @@ public class HomeFragment extends Fragment {
 						editor.commit();
 					}
 					receiverName.setText(receiverNameStr);
-					receiverMobilephone.setText(receiverMobilephoneStr);
+					if(cur_phoneNumDataString.startsWith("1") && cur_phoneNumDataString.length() == 11)
+					receiverMobilephone.setText(ParsingTool.convert2PhoneDisplay(cur_phoneNumDataString));
+					else
+						receiverMobilephone.setText(cur_phoneNumDataString + "(测试数据)");
+						
 					String companyStr2 = result.getString("companyName")
 							.toString();
 					Log.e("companyName:", companyStr2);
@@ -646,9 +837,10 @@ public class HomeFragment extends Fragment {
 				// default: break;
 				// }
 
-				receiverMobilephone.requestFocus(); // 获取焦点
-				receiverMobilephone.setSelection(receiverMobilephone.getText()
-						.toString().length()); // 设置光标位置
+//				receiverMobilephone.requestFocus(); // 获取焦点
+//				receiverMobilephone.setSelection(receiverMobilephone.getText()
+//						.toString().length()); // 设置光标位置
+				receiverMobilephone.requestFocus();
 			}
 		} else if (requestCode == 3) { // 设置起始编号
 			int serialNumber = mySharedPreferences.getInt(
@@ -733,98 +925,49 @@ public class HomeFragment extends Fragment {
 		return false;
 	}
 
-	private class MainHandler extends Handler {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case HadwareControll.BARCODE_READ:
-				String scanResult0 = msg.obj + ""; // 条形码扫描结果
-				// V2.1新增功能：扫码入库时将前后的“*”号过滤掉
-				String scanResult = "";
-				if (scanResult0.charAt(0) == '*') { // 如果首字母为“*”号，则去掉前后的“*”号
-					scanResult = scanResult0.substring(1,
-							scanResult0.length() - 1);
-				} else {
-					scanResult = scanResult0;
-				}
-				mailNo.setText(scanResult.replaceAll(" ", "")); // 去掉所有空格
-				play_sound();
-				// 扫描完毕直接查询快件
-				mailNoStr = mailNo.getText().toString().trim();
-				if (!mailNoStr.equals("") && isLetterOrDigit(mailNoStr)) {
-					Intent intent = new Intent(mActivity,
-							LoadingIIActivity.class);
-					intent.putExtra("mailNo", mailNoStr);
-					startActivityForResult(intent, 2);
-				} else {
-					Toast.makeText(mActivity, "运单号有误，请重新扫描！",
-							Toast.LENGTH_SHORT).show();
-				}
-				break;
-			default:
-				break;
-			}
-		}
-	};
-
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_F9 || keyCode == KeyEvent.KEYCODE_F10
-				|| keyCode == KeyEvent.KEYCODE_F11) {
-			// V2.1.1 修改：黄色按键二次按下时，快件直接入库（不用再点击屏幕上的“快件入库”按钮）,
-			// 判断依据：若“运单号”不为空，则调用入库函数
-			if (!mailNo.getText().toString().equals("")) {
-				billInStore(); // 快件入库
-			} else {
-				if (press) {
-					HadwareControll.scan_start();
-					press = false;
-					return true;
-				}
-			}
-		}
-		if (keyCode == KeyEvent.KEYCODE_BACK
-				|| keyCode == KeyEvent.KEYCODE_HOME) {
-			new AlertDialog.Builder(mActivity)
-					.setTitle("退出")
-					.setMessage("确定要退出校园谷吗？")
-					.setNegativeButton("取消", null)
-					.setPositiveButton("退出",
-							new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									mActivity.finish();
-								}
-							}).show();
-		}
-		return true;
-	}
-
-	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_F9 || keyCode == KeyEvent.KEYCODE_F10
-				|| keyCode == KeyEvent.KEYCODE_F11) {
-			HadwareControll.scan_stop();
-			press = true;
-			return true;
-		}
-		return true;
-	}
-
-	public void play_sound() {
-		try {
-			if (mediaPlayer == null)
-				mediaPlayer = MediaPlayer.create(mActivity, R.raw.beep);
-			mediaPlayer.stop();
-			mediaPlayer.prepare();
-			mediaPlayer.start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void onDestroy() {
-		HadwareControll.Close();
-		HadwareControll.m_handler = null;
-		super.onDestroy();
-	}
-
-}
+	/*
+	 * private class MainHandler extends Handler { public void
+	 * handleMessage(Message msg) { switch (msg.what) { case
+	 * HadwareControll.BARCODE_READ: String scanResult0 = msg.obj + ""; //
+	 * 条形码扫描结果 // V2.1新增功能：扫码入库时将前后的“*”号过滤掉 String scanResult = ""; if
+	 * (scanResult0.charAt(0) == '*') { // 如果首字母为“*”号，则去掉前后的“*”号 scanResult =
+	 * scanResult0.substring(1, scanResult0.length() - 1); } else { scanResult =
+	 * scanResult0; } mailNo.setText(scanResult.replaceAll(" ", "")); // 去掉所有空格
+	 * Log.e("Test_ScanResult:", scanResult.replaceAll(" ", ""));
+	 * Toast.makeText(mActivity, scanResult.replaceAll(" ", ""),
+	 * Toast.LENGTH_SHORT).show(); play_sound(); // 扫描完毕直接查询快件 mailNoStr =
+	 * mailNo.getText().toString().trim(); if (!mailNoStr.equals("") &&
+	 * isLetterOrDigit(mailNoStr)) { Intent intent = new Intent(mActivity,
+	 * LoadingIIActivity.class); intent.putExtra("mailNo", mailNoStr);
+	 * startActivityForResult(intent, 2); } else { Toast.makeText(mActivity,
+	 * "运单号有误，请重新扫描！", Toast.LENGTH_SHORT).show(); } break; default: break; } }
+	 * };
+	 * 
+	 * public boolean onKeyDown(int keyCode, KeyEvent event) { if (keyCode ==
+	 * KeyEvent.KEYCODE_9 || keyCode == KeyEvent.KEYCODE_F10 || keyCode ==
+	 * KeyEvent.KEYCODE_F11) { // V2.1.1 修改：黄色按键二次按下时，快件直接入库（不用再点击屏幕上的“快件入库”按钮）,
+	 * // 判断依据：若“运单号”不为空，则调用入库函数 if (!mailNo.getText().toString().equals("")) {
+	 * billInStore(); // 快件入库 } else { if (press) {
+	 * HadwareControll.scan_start(); press = false; return true; } } } if
+	 * (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_HOME) {
+	 * new AlertDialog.Builder(mActivity) .setTitle("退出")
+	 * .setMessage("确定要退出校园谷吗？") .setNegativeButton("取消", null)
+	 * .setPositiveButton("退出", new DialogInterface.OnClickListener() {
+	 * 
+	 * @Override public void onClick(DialogInterface dialog, int which) {
+	 * mActivity.finish(); } }).show(); } return true; }
+	 * 
+	 * public boolean onKeyUp(int keyCode, KeyEvent event) { if (keyCode ==
+	 * KeyEvent.KEYCODE_F9 || keyCode == KeyEvent.KEYCODE_F10 || keyCode ==
+	 * KeyEvent.KEYCODE_F11) { HadwareControll.scan_stop(); press = true; return
+	 * true; } return true; }
+	 * 
+	 * public void play_sound() { try { if (mediaPlayer == null) mediaPlayer =
+	 * MediaPlayer.create(mActivity, R.raw.beep); mediaPlayer.stop();
+	 * mediaPlayer.prepare(); mediaPlayer.start(); } catch (Exception e) {
+	 * e.printStackTrace(); } }
+	 * 
+	 * public void onDestroy() { HadwareControll.Close();
+	 * HadwareControll.m_handler = null; super.onDestroy(); }
+	 */
+}	

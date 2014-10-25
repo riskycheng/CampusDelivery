@@ -2,6 +2,8 @@ package com.chengjian.vgoo2;
 
 import com.chengjian.utils.ConstantParams;
 import com.chengjian.utils.LoadingActivity;
+import com.chengjian.utils.UpdateManager;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -26,6 +28,7 @@ public class AboutTabFragment extends Fragment {
 	SharedPreferences mySharedPreferences;
 	SharedPreferences.Editor editor;
 	public static int adminId = 0;
+	public static String local_sms_content = "";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -97,6 +100,14 @@ public class AboutTabFragment extends Fragment {
 				LayoutInflater inflater = (LayoutInflater) mActivity
 						.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 				final View view = inflater.inflate(R.layout.sms_layout, null);
+				final EditText smsContentEditext = (EditText) view
+						.findViewById(R.id.Editetext_sms_content);
+				// 如果当前有值，加载
+				local_sms_content = mySharedPreferences.getString("local_sms",
+						"");
+				smsContentEditext.setText(local_sms_content);
+				smsContentEditext.setSelection(local_sms_content.length());
+				
 				new AlertDialog.Builder(mActivity)
 						.setTitle("添加短信模板：")
 						.setView(view)
@@ -106,11 +117,14 @@ public class AboutTabFragment extends Fragment {
 									@Override
 									public void onClick(DialogInterface dialog,
 											int which) {
-										EditText smsContentEditext = (EditText) view
-												.findViewById(R.id.Editetext_sms_content);
+
 										String smsContent = smsContentEditext
 												.getText().toString().trim();
 										if (!smsContent.equals("")) {
+											// 将结果写入本地
+											editor.putString("local_sms",
+													smsContent);
+											editor.commit();
 											// 调用WebService方法 写入结果
 											Intent intent = new Intent(
 													mActivity,
@@ -140,8 +154,14 @@ public class AboutTabFragment extends Fragment {
 				break;
 
 			case R.id.setting_04_update:
-				Toast.makeText(mActivity, "检查更新功能升级中...", Toast.LENGTH_SHORT)
-						.show();
+
+				// Toast.makeText(mActivity, "检查更新功能升级中...", Toast.LENGTH_SHORT)
+				// .show();
+
+				Intent intent = new Intent(mActivity, LoadingActivity.class);
+				intent.putExtra("loadingType", "update");
+				startActivityForResult(intent, 3);
+
 				break;
 			case R.id.setting_05_signOut:
 				new AlertDialog.Builder(mActivity)
@@ -194,6 +214,18 @@ public class AboutTabFragment extends Fragment {
 						.show();
 				Log.e("set_sms:", "success!");
 
+			}
+			// 如果请求类型是 更新版本
+		} else if (requestCode == 3) {
+			if (resultCode == Activity.RESULT_OK) {
+				String httpResult = data
+						.getStringExtra(ConstantParams.EXTRA_QUERYBILL_RESULT);
+				Log.e("httpResult:", httpResult);
+				// 判断版本号
+				float serverVersion = Float.parseFloat(httpResult);
+				UpdateManager updateManager = new UpdateManager(mActivity);
+				updateManager
+						.checkUpdateInfo(serverVersion > ConstantParams.CUR_VERIOSN);
 			}
 		}
 
